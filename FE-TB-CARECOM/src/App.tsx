@@ -11,11 +11,19 @@ import ProfileAdmin from './pages/ProfileAdmin';
 import ProfileUser from './pages/ProfileUser';
 import DashboardAdmin from './pages/DashboardAdmin';
 import DashboardUser from './pages/DashboardUser';
+import FormLaporan from './pages/FormLaporan';
+import RiwayatLaporan from './pages/RiwayatLaporan';
+import Edukasi from './pages/Edukasi';
+import DashboardPMO from './pages/DashboardPMO';
+import SuperAdmin from './pages/SuperAdmin';
 
 const publicRoutes = [
   { path: '/', element: <Home /> },
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
+  { path: '/dashboardadmin', element: <DashboardAdmin /> },
+  { path: '/dashboardpmo', element: <DashboardPMO /> },
+  { path: '/superadmin', element: <SuperAdmin /> },
 ];
 
 const privateRoutes = [
@@ -25,26 +33,36 @@ const privateRoutes = [
 ];
 
 const adminRoutes = [
-  { path: '/dashboardadmin', element: <DashboardAdmin /> },
   { path: '/profileadmin', element: <ProfileAdmin /> },
 ];
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          {publicRoutes.map(({ path, element }) => (
-            <Route key={path} path={path} element={element} />
-          ))}
-          {privateRoutes.map(({ path, element }) => (
-            <Route key={path} path={path} element={<PrivateRoute>{element}</PrivateRoute>} />
-          ))}
-          {adminRoutes.map(({ path, element }) => (
-            <Route key={path} path={path} element={<AdminRoute>{element}</AdminRoute>} />
-          ))}
-        </Routes>
-      </Router>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <Router>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/scan/:barcodeId" element={<FormLaporan />} />
+            <Route path="/scan/:barcodeId/history" element={<RiwayatLaporan />} />
+            <Route path="/edukasi" element={<Edukasi />} />
+            <Route path="/dashboardadmin" element={<DashboardAdmin />} />
+            <Route path="/dashboardpmo" element={<DashboardPMO />} />
+            <Route path="/superadmin" element={<SuperAdmin />} />
+            {/* Private routes */}
+            {privateRoutes.map(({ path, element }) => (
+              <Route key={path} path={path} element={<PrivateRoute>{element}</PrivateRoute>} />
+            ))}
+            {/* Admin routes */}
+            {adminRoutes.map(({ path, element }) => (
+              <Route key={path} path={path} element={<AdminRoute>{element}</AdminRoute>} />
+            ))}
+          </Routes>
+        </Router>
+      </div>
     </AuthProvider>
   );
 }
