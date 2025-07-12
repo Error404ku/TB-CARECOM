@@ -18,4 +18,14 @@ class UserRepository
     {
         return $this->model->where('email', $email)->first();
     }
+
+    public function findById(int $id): ?User
+    {
+        return $this->model->where('id', $id)->first();
+    }
+
+    public function delete(int $id): bool
+    {
+        return $this->model->destroy($id);
+    }
 }

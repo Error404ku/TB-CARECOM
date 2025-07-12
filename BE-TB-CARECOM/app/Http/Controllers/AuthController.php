@@ -2,58 +2,76 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\CreatePerawat;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Traits\ApiResponse;
+use App\Services\UserService;
 
 class AuthController extends Controller
 {
     use ApiResponse;
 
+    public function __construct(
+        private UserService $userService,
+    )
+    {}
+
     public function register(RegisterRequest $request)
     {
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        $user = [
+            'name'=> $request->validated('name'),
+            'email'=> $request->validated('email'),
+            'password'=> $request->validated('password'),
+        ];
 
-        try {
-            $token = JWTAuth::fromUser($user);
-        } catch (JWTException $e) {
-            return $this->error('Gagal membuat token', 500);
-
+        $user = $this->userService->register($user);
+        if (!$user['success']) {
+            return $this->error($user['message'], 400, null);
         }
+        return $this->success($user['data'], $user['message'], 201);
+    }
+    public function createPerawat(CreatePerawat $request)
+    {
+        $user = [
+            'name'=> $request->validated('name'),
+            'email'=> $request->validated('email'),
+            'password'=> $request->validated('password'),
+            'rs'=> $request->validated('rs'),
+            'role'=> 'perawat',
+        ];
 
-        return $this->success([
-            'token' => $token,
-            'user' => $user,
-            'expires_in' => JWTAuth::factory()->getTTL() * 60,
-        ], 'Akun berhasil di register', 201);
+        $user = $this->userService->register($user);
+        if (!$user['success']) {
+            return $this->error($user['message'], 400, null);
+        }
+        return $this->success($user['data'], $user['message'], 201);
     }
 
     public function login(LoginRequest $request)
     {
-        $credentials = $request->only('email', 'password');
-
         try {
-            if (!$token = JWTAuth::attempt($credentials)) {
-                return $this->error('Email atau password salah', 401);
-            }
-        } catch (JWTException $e) {
-            return $this->error('Gagal membuat token', 500);
-        }
+            $data =[
+                'email'=> $request->validated('email'),
+                'password'=> $request->validated('password'),
+            ];
 
-        return $this->success([
-            'token' => $token,
-            'expires_in' => JWTAuth::factory()->getTTL() * 60,
-        ], 'Login berhasil', 200);
+            $user = $this->userService->login($data);
+            if (!$user['success']) {
+                return $this->error($user['message'], 401, null);
+            }
+
+            return $this->success($user['data'], $user['message'], 200);
+            
+        } catch (JWTException $e) {
+            return $this->error('Gagal membuat token', 500, null);
+        } catch (\Exception $e) {
+            return $this->error('Terjadi kesalahan saat login', 500, null);
+        }
     }
 
     public function logout()
@@ -67,27 +85,28 @@ class AuthController extends Controller
         return $this->success([], 'Logout berhasil', 200);
     }
 
-    public function getUser()
+    public function delete(Request $request)
+    {
+        if (!Auth::user()->role == 'admin') {
+            return $this->error('Anda tidak memiliki akses', 403);
+        }
+
+        $user = $user = $this->userService->delete($request->id);
+        return $this->success([], 'User berhasil dihapus', 200);
+    }
+
+    public function refresh()
     {
         try {
-            $user = Auth::user();
-            if (!$user) {
-                return $this->error('User tidak ditemukan', 404);
-            }
-            return $this->success($user, 'User berhasil diambil', 200);
-        } catch (JWTException $e) {
-            return $this->error('Gagal mengambil user', 500);
+            $token = JWTAuth::parseToken()->refresh();
+            return $this->success([
+                'token' => $token,
+                'type' => 'bearer'
+            ], 'Token berhasil diperbarui', 200);
+        } catch (\Exception $e) {
+            return $this->error('Terjadi kesalahan saat memperbarui token', 400, null);
         }
     }
 
-    public function updateUser(Request $request)
-    {
-        try {
-            $user = Auth::user();
-            // $user->update($request->only(['name', 'email']));
-            return $this->success($user, 'User berhasil diupdate', 200);
-        } catch (JWTException $e) {
-            return $this->error('Gagal update user', 500);
-        }
-    }
+
 }
