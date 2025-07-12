@@ -33,16 +33,25 @@ class User extends Authenticatable
         'password',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
+
+    public function getJWTCustomClaims()
+    {
+        return [
+            'id' => $this->id,
+            'email' => $this->email,
+            'role' => $this->role,
+        ];
+    }
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
 }

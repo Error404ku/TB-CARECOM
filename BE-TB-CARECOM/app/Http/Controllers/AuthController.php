@@ -85,13 +85,13 @@ class AuthController extends Controller
         return $this->success([], 'Logout berhasil', 200);
     }
 
-    public function delete(Request $request)
+    public function delete($id)
     {
         if (!Auth::user()->role == 'admin') {
             return $this->error('Anda tidak memiliki akses', 403);
         }
 
-        $user = $user = $this->userService->delete($request->id);
+        $user = $user = $this->userService->delete($id);
         return $this->success([], 'User berhasil dihapus', 200);
     }
 
