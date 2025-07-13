@@ -68,11 +68,11 @@ class User extends Authenticatable implements JWTSubject
 
     public function pmo()
     {
-        return $this->hasMany(Pmo::class, 'user_id', 'id');
+        return $this->hasOne(Pmo::class, 'user_id', 'id');
     }
 
     public function patient()
     {
-        return $this->hasOne(Patient::class, 'assigned_nurse_id', 'id');
+        return $this->hasMany(Patient::class, 'assigned_nurse_id', 'id');
     }
 }

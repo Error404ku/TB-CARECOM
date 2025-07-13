@@ -24,6 +24,11 @@ class UserRepository
         return $this->model->where('id', $id)->first();
     }
 
+     public function update(User $user, array $data): bool
+    {
+        return $user->update($data);
+    }
+
     public function delete(int $id): bool
     {
         return $this->model->destroy($id);

@@ -25,8 +25,7 @@ class PmoRepository
                     })
                     ->orWhereHas('user', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%")
-                        ->orWhere('rs', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%");
                     });
             });
         }

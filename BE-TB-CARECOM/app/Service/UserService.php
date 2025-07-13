@@ -18,8 +18,9 @@ class UserService
         $user = $this->userRepository->findByEmail($data['email']);
         if (!$user) {
             return [
+                'code' => 401,
                 'success' => false,
-                'message' => 'Pengguna tidak ditemukan'
+                'message' => 'Email atau password salah'
             ];
         }
 
@@ -36,8 +37,9 @@ class UserService
         }
 
         return [
+            'code' => 401,
             'success' => false,
-            'message' => 'Password salah'
+            'message' => 'Email atau password salah'
         ];
     }
 
@@ -47,6 +49,7 @@ class UserService
         $user = $this->userRepository->create($data);
         if (!$user) {
             return [
+                'code' => 400,
                 'success' => false,
                 'message' => 'Gagal register'
             ];
@@ -63,6 +66,7 @@ class UserService
         $user = $this->userRepository->findById($id);
         if (!$user) {
             return [
+                'code' => 404,
                 'success' => false,
                 'message' => 'User tidak ditemukan'
             ];
@@ -71,6 +75,7 @@ class UserService
         $result = $this->userRepository->delete($id);
         if (!$result) {
             return [
+                'code' => 500,
                 'success' => false,
                 'message' => 'Gagal delete'
             ];

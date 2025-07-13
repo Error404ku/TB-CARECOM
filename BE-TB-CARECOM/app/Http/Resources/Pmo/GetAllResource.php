@@ -17,18 +17,19 @@ class GetAllResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'gender' => $this->gender,
             'no_telp' => $this->no_telp,
             'relationship' => $this->relationship,
             'patient' => $this->patient ? [
                 'name' => $this->patient->name,
                 'address' => $this->patient->address,
+                'gender' => $this->patient->gender,
                 'no_telp' => $this->patient->no_telp,
                 'status' => $this->patient->status,
             ] : null,
             'user' => $this->user ? [
                 'name' => $this->user->name,
                 'email' => $this->user->email,
-                'rs' => $this->user->rs,
             ] : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

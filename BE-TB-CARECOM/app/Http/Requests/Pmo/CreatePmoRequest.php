@@ -28,6 +28,7 @@ class CreatePmoRequest extends FormRequest
             'patient_id' => 'required|exists:patients,id',
             'name' => 'required|string|max:255',
             'no_telp' => 'required|string|max:20|unique:pmos,no_telp',
+            'gender' => 'required|in:L,P',
             'relationship' => 'required|string|max:100',
         ];
     }
@@ -49,6 +50,8 @@ class CreatePmoRequest extends FormRequest
             'no_telp.string' => 'Nomor telepon harus berupa teks',
             'no_telp.max' => 'Nomor telepon maksimal 20 karakter',
             'no_telp.unique' => 'Nomor telepon sudah terdaftar',
+            'gender.required' => 'Jenis kelamin harus diisi',
+            'gender.in' => 'Jenis kelamin harus berupa L/P',
             'relationship.required' => 'Hubungan harus diisi',
             'relationship.string' => 'Hubungan harus berupa teks',
             'relationship.max' => 'Hubungan maksimal 100 karakter',

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('patient_id')->nullable()->constrained('patients')->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('name');
+            $table->char('gender', 1);
             $table->string('no_telp', 20)->unique();
             $table->string('relationship', 100);
             $table->timestamps();

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('address');
+            $table->char('gender', 1);
             $table->string('no_telp', 20)->unique();
             $table->date('start_treatment_date');
             $table->uuid('qr_code_identifier')->unique();

@@ -26,8 +26,10 @@ class UpdatePmoRequest extends FormRequest
     {
         return [
             'patient_id' => 'nullable|exists:patients,id',
+            'user_id' => 'nullable|exists:users,id',
             'name' => 'nullable|string|max:255',
-            'no_telp' => 'nullable|string|max:20|unique:pmos,no_telp,' . $this->route('id'),
+            'no_telp' => 'nullable|string|max:20|unique:pmos,no_telp,' . $this->route('id') . ',id',
+            'gender' => 'nullable|in:L,P',
             'relationship' => 'nullable|string|max:100',
         ];
     }
@@ -47,6 +49,7 @@ class UpdatePmoRequest extends FormRequest
             'no_telp.string' => 'Nomor telepon harus berupa teks',
             'no_telp.max' => 'Nomor telepon maksimal 20 karakter',
             'no_telp.unique' => 'Nomor telepon sudah terdaftar',
+            'gender.in' => 'Jenis kelamin harus berupa L/P',
             'relationship.string' => 'Hubungan harus berupa teks',
             'relationship.max' => 'Hubungan maksimal 100 karakter',
         ];
