@@ -5,12 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\CreatePerawat;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Traits\ApiResponse;
-use App\Services\UserService;
+use App\Service\UserService;
 
 class AuthController extends Controller
 {
@@ -45,7 +44,7 @@ class AuthController extends Controller
             'role'=> 'perawat',
         ];
 
-        $user = $this->userService->register($user);
+       $user = $this->userService->register($user);
         if (!$user['success']) {
             return $this->error($user['message'], 400, null);
         }

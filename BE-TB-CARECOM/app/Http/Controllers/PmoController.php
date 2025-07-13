@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Pmo\CreatePmoRequest;
 use App\Http\Requests\Pmo\UpdatePmoRequest;
-use App\Services\PmoService;
+use App\Service\PmoService;
 use App\Traits\ApiResponse;
 use Illuminate\Support\Facades\Auth;
 

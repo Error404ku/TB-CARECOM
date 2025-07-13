@@ -3,15 +3,18 @@
 namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Traits\FormRequestTrait;
 
 class CreatePerawat extends FormRequest
 {
+    use FormRequestTrait;
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,25 +26,25 @@ class CreatePerawat extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
             'rs' => 'required|string|max:255',
+            'role' => 'nullable|string|max:255',
         ];
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
             'name.required' => 'Nama harus diisi',
             'name.string' => 'Nama harus berupa string',
+            'name.max' => 'Nama maksimal 255 karakter',
             'email.required' => 'Email harus diisi',
-            'email.string' => 'Email harus berupa string',
-            'email.email' => 'Email tidak valid',
+            'email.email' => 'Email harus berupa email',
             'email.unique' => 'Email sudah terdaftar',
             'password.required' => 'Password harus diisi',
+            'password.string' => 'Password harus berupa string',
             'password.min' => 'Password minimal 8 karakter',
-            'rs.required' => 'RS harus diisi',
-            'rs.string' => 'RS harus berupa string',
         ];
     }
 }
