@@ -14,6 +14,7 @@ class PmoService
     {
         try {
             $pmo = $this->pmoRepository->create($data);
+            
             return [
                 'success' => true,
                 'message' => 'PMO berhasil dibuat',
@@ -22,7 +23,7 @@ class PmoService
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Gagal membuat: ' . $e->getMessage()
+                'message' => 'Gagal membuat PMO: ' . $e->getMessage()
             ];
         }
     }
