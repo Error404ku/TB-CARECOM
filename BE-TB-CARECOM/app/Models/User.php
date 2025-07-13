@@ -21,9 +21,9 @@ class User extends Authenticatable implements JWTSubject
     protected $fillable = [
         'name',
         'email',
+        'role',
         'password',
         'rs',
-        'role',
     ];
 
     /**
@@ -42,7 +42,22 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    public function getJWTCustomClaims()
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     *
+     * @return mixed
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     *
+     * @return array
+     */
+     public function getJWTCustomClaims()
     {
         return [
             'id' => $this->id,
@@ -51,9 +66,13 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-    public function getJWTIdentifier()
+    public function pmo()
     {
-        return $this->getKey();
+        return $this->hasMany(Pmo::class, 'user_id', 'id');
     }
 
+    public function patient()
+    {
+        return $this->hasOne(Patient::class, 'assigned_nurse_id', 'id');
+    }
 }

@@ -12,8 +12,8 @@ class Pmo extends Model
     protected $table = 'pmos';
 
     protected $fillable = [
-        'user_id',
         'patient_id',
+        'user_id',
         'name',
         'no_telp',
         'relationship',
@@ -21,11 +21,11 @@ class Pmo extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     public function patient()
     {
-        return $this->belongsTo(Patient::class, 'patient_id');
+        return $this->belongsTo(Patient::class, 'patient_id', 'id');
     }
 }

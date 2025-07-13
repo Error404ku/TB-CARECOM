@@ -15,10 +15,4 @@ class EducationalMaterial extends Model
         'public_id',
         'url_file',
     ];
-    
-    protected $hidden = [
-        'created_at',
-        'updated_at',
-    ];
-
 }
