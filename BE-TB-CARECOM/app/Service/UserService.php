@@ -4,6 +4,7 @@ namespace App\Service;
 
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Repositories\UserRepository;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserService
@@ -43,7 +44,7 @@ class UserService
         ];
     }
 
-    public function register (array $data): array
+    public function register(array $data): array
     {
         $data['password'] = Hash::make($data['password']);
         $user = $this->userRepository->create($data);
@@ -59,6 +60,39 @@ class UserService
             'data' => $user,
             'message' => 'Akun berhasil di register',
         ];
+    }
+
+    public function update(int $id, array $data): array
+    {
+        $user = $this->userRepository->findById($id);
+        if (!$user) {
+            return [
+                'code' => 404,
+                'success' => false,
+                'message' => 'User tidak ditemukan'
+            ];
+        }
+        try {
+            if (isset($data['password']) && !empty($data['password'])) {
+                $data['password'] = Hash::make($data['password']);
+            } else {
+                unset($data['password']);
+            }
+
+            $user = $this->userRepository->update($user, $data);
+
+            return [
+                'success' => true,
+                'data' => $user,
+                'message' => 'User berhasil di update',
+            ];
+        } catch (\Exception $e) {
+            return [
+                'code' => 500,
+                'success' => false,
+                'message' => 'Gagal update'
+            ];
+        }
     }
 
     public function delete(int $id): array
@@ -80,7 +114,7 @@ class UserService
                 'message' => 'Gagal delete'
             ];
         }
-        
+
         return [
             'success' => true,
             'message' => 'User berhasil dihapus',

@@ -7,12 +7,12 @@ use App\Http\Controllers\PmoController;
 Route::prefix('/auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/create-perawat', [AuthController::class, 'createPerawat']);
 });
 
 Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::delete('/user/{id}', [AuthController::class, 'delete']);
+    Route::put('/user', [AuthController::class, 'update']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
 
     // PMO Routes
@@ -27,8 +27,10 @@ Route::middleware('auth:api')->group(function () {
         });
     });
 
-    
+
     Route::middleware('role:admin')->group(function () {
+        Route::prefix('admin')->group(function () {
+            Route::put('/user/{id}', [AuthController::class, 'updateByAdmin']);
+        });
     });
 });
-

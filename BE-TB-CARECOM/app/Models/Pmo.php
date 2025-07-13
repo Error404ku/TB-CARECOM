@@ -16,6 +16,7 @@ class Pmo extends Model
         'user_id',
         'name',
         'no_telp',
+        'gender',
         'relationship',
     ];
 

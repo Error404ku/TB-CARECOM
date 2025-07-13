@@ -11,8 +11,10 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\CreatePerawat;
+use App\Http\Requests\Auth\UpdateRequest;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\UpdateByAdminRequest;
 
 class AuthController extends Controller
 {
@@ -124,6 +126,26 @@ class AuthController extends Controller
         }
 
         return $this->success([], 'Logout berhasil', 200);
+    }
+
+    public function update(UpdateRequest $request)
+    {
+        $user = $this->userService->update(Auth::user()->id, $request->validated());
+        if (!$user['success']) {
+            return $this->error($user['message'], $user['code'], null);
+        }
+
+        return $this->success($user['data'], $user['message'], 200);
+    }
+
+    public function updateByAdmin(int $id, UpdateByAdminRequest $request)
+    {
+        $user = $this->userService->update($id, $request->validated());
+        if (!$user['success']) {
+            return $this->error($user['message'], $user['code'], null);
+        }
+        
+        return $this->success($user['data'], $user['message'], 200);
     }
 
     public function delete($id)
