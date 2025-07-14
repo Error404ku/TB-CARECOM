@@ -33,7 +33,7 @@ class PmoController extends Controller
         if (!$result['success']) {
             return $this->error($result['message'], $result['code'], null);
         }
-        return $this->success($result['data'], $result['message'], 200, $result['pagination'], $result['current_filters']);
+        return $this->success( $result['message'], 200,$result['data'], $result['pagination'], $result['current_filters']);
     }
 
     public function getById($id)
@@ -42,7 +42,7 @@ class PmoController extends Controller
         if (!$result['success']) {
             return $this->error($result['message'], $result['code'], null);
         }
-        return $this->success($result['data'], $result['message'], 200);
+        return $this->success( $result['message'], 200,$result['data']);
     }
 
     public function getByPatient($patientId)
@@ -51,7 +51,7 @@ class PmoController extends Controller
         if (!$result['success']) {
             return $this->error($result['message'], $result['code'], null);
         }
-        return $this->success($result['data'], $result['message'], 200);
+        return $this->success( $result['message'], 200,$result['data']);
     }
 
     public function create(CreatePmoRequest $request)
@@ -64,7 +64,7 @@ class PmoController extends Controller
             return $this->error($result['message'], $result['code'], null);
         }
 
-        return $this->success($result['data'], $result['message'], 201);
+        return $this->success( $result['message'], 201,$result['data']);
     }
 
     public function update(UpdatePmoRequest $request, $id)
@@ -76,7 +76,7 @@ class PmoController extends Controller
             return $this->error($result['message'], $result['code'], null);
         }
 
-        return $this->success($result['data'], $result['message'], 200);
+        return $this->success( $result['message'], 200,$result['data']);
     }
 
     public function delete($id)
@@ -85,6 +85,6 @@ class PmoController extends Controller
         if (!$result['success']) {
             return $this->error($result['message'], $result['code'], null);
         }
-        return $this->success(null, $result['message'], 200);
+        return $this->success( $result['message'], 200,null);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Traits;
 
 trait ApiResponse
 {
-    protected function success($data = [], $message = 'Success', $code = 200, $pagination = null, $currentFilters = null)
+    protected function success($message = 'Success', $code = 200, $data = [],  $pagination = null, $currentFilters = null)
     {
         $response = [
             'meta' => [

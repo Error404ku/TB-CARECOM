@@ -15,7 +15,6 @@ class PatientService
     {
         try {
             $patient = $this->patientRepository->create($data);
-            
             return [
                 'success' => true,
                 'message' => 'patient berhasil dibuat',
@@ -99,14 +98,16 @@ class PatientService
                 'message' => 'Patient ditemukan',
                 'data' => $patient
             ];
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Gagal mendapatkan patient: ' . $e->getMessage()
+                'message' => 'Gagal mengambil patient: ' . $e->getMessage()
             ];
         }
     }
+
 
     public function getAll($filters = []): array
     {
@@ -150,6 +151,32 @@ class PatientService
                 'code' => 500,
                 'success' => false,
                 'message' => 'Gagal mengambil daftar patient: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    public function getByQrId(string $qrId): array
+    {
+        try {
+            $patient = $this->patientRepository->getByQrId($qrId);
+            if (!$patient) {
+                return [
+                    'code' => 404,
+                    'success' => false,
+                    'message' => 'Patient tidak ditemukan'
+                ];
+            }
+            
+            return [
+                'success' => true,
+                'message' => 'Patient ditemukan',
+                'data' => $patient
+            ];
+        } catch (\Exception $e) {
+            return [
+                'code' => 500,
+                'success' => false,
+                'message' => 'Gagal mengambil patient: ' . $e->getMessage()
             ];
         }
     }

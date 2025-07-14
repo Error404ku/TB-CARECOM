@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Models\Patient;
-use Illuminate\Database\Eloquent\Collection;
 
 class PatientRepository
 {
@@ -76,4 +75,10 @@ class PatientRepository
     {
         return $this->model->destroy($id);
     }
+
+    public function getByQrId(string $qrId)
+    {
+        return $this->model->where('qr_code_identifier', $qrId)->first();
+    }
+    
 }
