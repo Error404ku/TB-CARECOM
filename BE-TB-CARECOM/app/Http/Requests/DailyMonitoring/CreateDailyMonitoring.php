@@ -13,7 +13,7 @@ class CreateDailyMonitoring extends FormRequest
         return [
             'medication_time' => 'required|date',
             'description' => 'required|string',
-            'token' => 'required|string',
+            'qr' => 'required|string',
         ];
     }
     public function messages(): array
@@ -23,8 +23,8 @@ class CreateDailyMonitoring extends FormRequest
             'medication_time.date' => 'Wajib Mencantumkan Tanggal Pengisian Obat',
             'description.required' => 'Wajib Mencantumkan Deskripsi Pengisian Obat',
             'description.string' => 'Deskripsi Pengisian Obat Harus Berupa String',
-            'token.required' => 'Token wajib diisi',
-            'token.string' => 'Token harus berupa string',
+            'qr.required' => 'QR wajib diisi',
+            'qr.string' => 'QR harus berupa string',
         ];
     }
 }
