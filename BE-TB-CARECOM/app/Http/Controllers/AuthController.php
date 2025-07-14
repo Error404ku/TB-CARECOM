@@ -72,7 +72,7 @@ class AuthController extends Controller
             }
 
             DB::commit();
-            return $this->success( $user['message'], 201,$user['data']);
+            return $this->success($user['message'], 201, $user['data']);
         } catch (\Exception $e) {
             DB::rollback();
             return $this->error('Terjadi kesalahan saat registrasi', 500, null);
@@ -93,7 +93,7 @@ class AuthController extends Controller
         if (!$user['success']) {
             return $this->error($user['message'], 400, null);
         }
-        return $this->success( $user['message'], 201,$user['data']);
+        return $this->success($user['message'], 201, $user['data']);
     }
 
     public function login(LoginRequest $request)
@@ -109,7 +109,7 @@ class AuthController extends Controller
                 return $this->error($user['message'], $user['code'], null);
             }
 
-            return $this->success( $user['message'], 200,$user['data'],);
+            return $this->success($user['message'], 200, $user['data'],);
         } catch (JWTException $e) {
             return $this->error('Gagal membuat token', 500, null);
         } catch (\Exception $e) {
@@ -124,7 +124,7 @@ class AuthController extends Controller
         } catch (JWTException $e) {
             return $this->error('Gagal logout', 500);
         }
-        return $this->success( 'Logout berhasil', 200,[]);
+        return $this->success('Logout berhasil', 200, []);
     }
 
     public function update(UpdateRequest $request)
@@ -134,7 +134,7 @@ class AuthController extends Controller
             return $this->error($user['message'], $user['code'], null);
         }
 
-        return $this->success( $user['message'], 200,$user['data']);
+        return $this->success($user['message'], 200, $user['data']);
     }
 
     public function updateByAdmin(int $id, UpdateByAdminRequest $request)
@@ -143,8 +143,8 @@ class AuthController extends Controller
         if (!$user['success']) {
             return $this->error($user['message'], $user['code'], null);
         }
-        
-        return $this->success( $user['message'], 200,$user['data'],);
+
+        return $this->success($user['message'], 200, $user['data'],);
     }
 
     public function delete($id)
@@ -157,7 +157,7 @@ class AuthController extends Controller
         if (!$user['success']) {
             return $this->error($user['message'], $user['code'], null);
         }
-        return $this->success('User berhasil dihapus', 200,null);
+        return $this->success('User berhasil dihapus', 200, null);
     }
 
     public function refresh()

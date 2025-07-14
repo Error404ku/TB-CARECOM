@@ -14,7 +14,7 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
-        return $request->expectsJson() ? null : route('login');
+        return null;
     }
     
     /**
@@ -28,10 +28,6 @@ class Authenticate extends Middleware
      */
     protected function unauthenticated($request, array $guards)
     {
-        if ($request->expectsJson()) {
-            abort($this->error('Anda belum login. Silakan login terlebih dahulu untuk mengakses fitur ini.', 401));
-        }
-        
-        parent::unauthenticated($request, $guards);
+        abort($this->error('Anda belum login. Silakan login terlebih dahulu untuk mengakses fitur ini.', 401));
     }
 }
