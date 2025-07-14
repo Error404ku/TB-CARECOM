@@ -20,7 +20,7 @@ class DailyMonitoringController extends Controller
     public function createDailyMonitoring(CreateDailyMonitoring $request)
     { 
         try {
-            $patientid = $this->patientService->getByQrId($request->token);
+            $patientid = $this->patientService->getByQrId($request->qr);
             if (!$patientid) {
                 return $this->error($patientid['message'], 400, null);
             }
