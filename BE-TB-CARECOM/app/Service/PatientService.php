@@ -11,7 +11,7 @@ class PatientService
         private PatientRepository $patientRepository,
     ) {}
 
-    public function create(array $data): array
+    public function create(array $data)
     {
         try {
             $patient = $this->patientRepository->create($data);

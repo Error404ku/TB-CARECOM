@@ -46,20 +46,28 @@ class UserService
 
     public function register(array $data): array
     {
-        $data['password'] = Hash::make($data['password']);
-        $user = $this->userRepository->create($data);
-        if (!$user) {
+        try{
+            $data['password'] = Hash::make($data['password']);
+            $user = $this->userRepository->create($data);
+            if (!$user) {
+                return [
+                    'code' => 400,
+                    'success' => false,
+                    'message' => 'Gagal register'
+                ];
+            }
             return [
-                'code' => 400,
+                'success' => true,
+                'data' => $user,
+                'message' => 'Akun berhasil di register',
+            ];
+        }catch (\Exception $e) {
+            return [
+                'code' => 500,
                 'success' => false,
-                'message' => 'Gagal register'
+                'message' => 'Gagal register ' . $e->getMessage()
             ];
         }
-        return [
-            'success' => true,
-            'data' => $user,
-            'message' => 'Akun berhasil di register',
-        ];
     }
 
     public function update(int $id, array $data): array
