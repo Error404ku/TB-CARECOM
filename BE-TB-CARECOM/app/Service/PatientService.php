@@ -32,7 +32,7 @@ class PatientService
     public function update(int $id, array $data): array
     {
         $patient = $this->patientRepository->findById($id);
-         if (!$patient) {
+        if (!$patient) {
             return [
                 'code' => 404,
                 'success' => false,
@@ -67,7 +67,7 @@ class PatientService
                     'message' => 'Patient tidak ditemukan'
                 ];
             }
-            
+
             return [
                 'success' => true,
                 'message' => 'Patient berhasil dihapus'
@@ -92,14 +92,13 @@ class PatientService
                     'message' => 'Patient tidak ditemukan'
                 ];
             }
-            
+
             return [
                 'success' => true,
                 'message' => 'Patient ditemukan',
                 'data' => new GetAllResource($patient)
             ];
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             return [
                 'code' => 500,
                 'success' => false,
@@ -113,14 +112,60 @@ class PatientService
     {
         try {
             $patients = $this->patientRepository->getAll($filters);
-            if($patients->isEmpty()) {
+            if ($patients->isEmpty()) {
                 return [
                     'code' => 404,
                     'success' => false,
                     'message' => 'Tidak ada data Patient'
                 ];
             }
-            
+
+            // Set pagination data
+            $pagination = [
+                'page' => $patients->currentPage(),
+                'per_page' => $patients->perPage(),
+                'total_items' => $patients->total(),
+                'total_pages' => $patients->lastPage()
+            ];
+
+            // Set current filters untuk response
+            $currentFilters = [
+                'search' => $filters['search'] ?? '',
+                'status' => $filters['status'] ?? '',
+                'start_date' => $filters['start_date'] ?? '',
+                'end_date' => $filters['end_date'] ?? '',
+                'sort_by' => $filters['sort_by'] ?? '',
+                'sort_direction' => $filters['sort_direction'] ?? '',
+            ];
+
+            return [
+                'success' => true,
+                'data' => GetAllResource::collection($patients),
+                'message' => 'Data patient berhasil diambil',
+                'pagination' => $pagination,
+                'current_filters' => $currentFilters
+            ];
+        } catch (\Exception $e) {
+            return [
+                'code' => 500,
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui patient'
+            ];
+        }
+    }
+
+    public function getByAssignedNurseId(int $assignedNurseId, array $filters = []): array
+    {
+        try {
+            $patients = $this->patientRepository->findByAssignedNurseId($assignedNurseId, $filters);
+            if ($patients->isEmpty()) {
+                return [
+                    'code' => 404,
+                    'success' => false,
+                    'message' => 'Tidak ada data Patient'
+                ];
+            }
+
             // Set pagination data
             $pagination = [
                 'page' => $patients->currentPage(),
@@ -166,7 +211,7 @@ class PatientService
                     'message' => 'Patient tidak ditemukan'
                 ];
             }
-            
+
             return [
                 'success' => true,
                 'message' => 'Patient ditemukan',

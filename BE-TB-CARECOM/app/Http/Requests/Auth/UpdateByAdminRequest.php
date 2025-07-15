@@ -25,22 +25,19 @@ class UpdateByAdminRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users,email,' . $this->user->id,
-            'role' => 'required|string|in:admin,perawat,pmo',
-            'rs' => 'required|string'
+            'name' => 'nullable|string',
+            'email' => 'nullable|email|unique:users,email,' . $this->user->id,
+            'role' => 'nullable|string|in:admin,perawat,pmo',
+            'rs' => 'nullable|string'
         ];
     }
 
     public function messages()
     {
         return [
-            'name.required' => 'Nama harus diisi',
             'name.string' => 'Nama harus berupa string',
-            'email.required' => 'Email harus diisi',
             'email.email' => 'Email tidak valid',
             'email.unique' => 'Email sudah digunakan',
-            'role.required' => 'Role harus diisi',
             'role.string' => 'Role harus berupa string',
             'role.in' => 'Role harus admin, perawat, atau pmo',
             'rs.required' => 'RS harus diisi',

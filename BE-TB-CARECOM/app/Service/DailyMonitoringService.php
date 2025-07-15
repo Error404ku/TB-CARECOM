@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Repositories\DailyMonitoringRepository;
 use App\Http\Resources\DailyMonitoring\GetResource;
+use Illuminate\Support\Facades\Auth;
 
 class DailyMonitoringService
 {
@@ -30,7 +31,7 @@ class DailyMonitoringService
         }
     }
 
-    public function update(int $id, array $data): array
+    public function updateByUser(int $id, array $data): array
     {
         $dailyMonitoring = $this->dailyMonitoringRepository->findById($id);
          if (!$dailyMonitoring) {
@@ -40,6 +41,14 @@ class DailyMonitoringService
                 'message' => 'Daily Monitoring tidak ditemukan'
             ];
         }
+        if($dailyMonitoring->patient_id != Auth::user()->pmo->patient_id) {
+            return [
+                'code' => 403,
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk mengupdate Daily Monitoring ini'
+            ];
+        }
+        
         try {
             $dailyMonitoring = $this->dailyMonitoringRepository->update($dailyMonitoring, $data);
 

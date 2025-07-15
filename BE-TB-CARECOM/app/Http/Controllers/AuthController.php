@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\CreatePerawat;
 use App\Http\Requests\Auth\UpdateRequest;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -78,23 +77,6 @@ class AuthController extends Controller
         }
     }
 
-    public function createPerawat(CreatePerawat $request)
-    {
-        $user = [
-            'name' => $request->validated('name'),
-            'email' => $request->validated('email'),
-            'password' => $request->validated('password'),
-            'rs' => $request->validated('rs'),
-            'role' => 'perawat',
-        ];
-
-        $user = $this->userService->register($user);
-        if (!$user['success']) {
-            return $this->error($user['message'], 400, null);
-        }
-        return $this->success($user['message'], 201, $user['data']);
-    }
-
     public function login(LoginRequest $request)
     {
         try {
@@ -125,40 +107,7 @@ class AuthController extends Controller
         }
         return $this->success('Logout berhasil', 200, []);
     }
-
-    public function update(UpdateRequest $request)
-    {
-        $user = $this->userService->update(Auth::user()->id, $request->validated());
-        if (!$user['success']) {
-            return $this->error($user['message'], $user['code'], null);
-        }
-
-        return $this->success($user['message'], 200, $user['data']);
-    }
-
-    public function updateByAdmin(int $id, UpdateByAdminRequest $request)
-    {
-        $user = $this->userService->update($id, $request->validated());
-        if (!$user['success']) {
-            return $this->error($user['message'], $user['code'], null);
-        }
-
-        return $this->success($user['message'], 200, $user['data'],);
-    }
-
-    public function delete($id)
-    {
-        if (!Auth::user()->role == 'admin') {
-            return $this->error('Anda tidak memiliki akses', 403);
-        }
-
-        $user = $this->userService->delete($id);
-        if (!$user['success']) {
-            return $this->error($user['message'], $user['code'], null);
-        }
-        return $this->success('User berhasil dihapus', 200, null);
-    }
-
+    
     public function refresh()
     {
         try {
@@ -166,7 +115,7 @@ class AuthController extends Controller
             return $this->success([
                 'token' => $token,
                 'type' => 'bearer'
-            ], 'Token berhasil diperbarui', 200);
+            ], 200,'Token berhasil diperbarui');
         } catch (\Exception $e) {
             return $this->error('Terjadi kesalahan saat memperbarui token', 400, null);
         }
