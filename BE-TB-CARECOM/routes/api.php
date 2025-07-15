@@ -33,7 +33,8 @@ Route::middleware('auth:api')->group(function () {
     // PMO Routes
     Route::middleware('role:pmo')->group(function () {
         Route::prefix('pmo')->group(function () {
-            Route::put('/{id}', [PmoController::class, 'update']);
+            Route::get('/daily-monitoring', [DailyMonitoringController::class, 'getDailyMonitoringByUser']);
+            Route::put('/daily-monitoring', [DailyMonitoringController::class, 'updateDailyMonitoring']);
         });
     });
 
@@ -57,6 +58,12 @@ Route::middleware('auth:api')->group(function () {
                 Route::post('/', [PmoController::class, 'create']);
                 Route::put('/{id}', [PmoController::class, 'update']);
                 Route::delete('/{id}', [PmoController::class, 'delete']);
+            });
+
+            Route::prefix('daily-monitoring')->group(function () {
+                Route::get('/', [DailyMonitoringController::class, 'getAll']);
+                Route::get('/{id}', [DailyMonitoringController::class, 'getById']);
+                Route::get('/patient/{patientId}', [DailyMonitoringController::class, 'getByPatientId']);
             });
         });
     });
