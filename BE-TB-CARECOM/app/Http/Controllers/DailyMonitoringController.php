@@ -41,9 +41,10 @@ class DailyMonitoringController extends Controller
     }
 
     //private
-    public function updateDailyMonitoring(UpdateRequest $request)
-    {
-        $dailyMonitoring = $this->dailyMonitoringService->update(Auth::user()->id, $request->validated());
+    public function updateDailyMonitoring(UpdateRequest $request, int $id)
+    {   
+
+        $dailyMonitoring = $this->dailyMonitoringService->update($id,Auth::user()->pmo->patient->id, $request->validated());
         if (!$dailyMonitoring['success']) {
             return $this->error($dailyMonitoring['message'], $dailyMonitoring['code'], null);
         }
@@ -125,7 +126,7 @@ class DailyMonitoringController extends Controller
             'per_page' => $request->per_page
         ];
 
-        $dailyMonitoring = $this->dailyMonitoringService->getByPatientId(Auth::user()->id, $filters);
+        $dailyMonitoring = $this->dailyMonitoringService->getByPatientId(Auth::user()->pmo->patient->id, $filters);
         if (!$dailyMonitoring['success']) {
             return $this->error($dailyMonitoring['message'], $dailyMonitoring['code'], null);
         }

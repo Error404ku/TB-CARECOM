@@ -30,7 +30,7 @@ class DailyMonitoringService
         }
     }
 
-    public function update(int $id, array $data): array
+    public function update(int $id, int $patentId, array $data): array
     {
         $dailyMonitoring = $this->dailyMonitoringRepository->findById($id);
          if (!$dailyMonitoring) {
@@ -40,6 +40,14 @@ class DailyMonitoringService
                 'message' => 'Daily Monitoring tidak ditemukan'
             ];
         }
+        if($dailyMonitoring->patient_id != $patentId) {
+            return [
+                'code' => 403,
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk mengupdate Daily Monitoring ini'
+            ];
+        }
+        
         try {
             $dailyMonitoring = $this->dailyMonitoringRepository->update($dailyMonitoring, $data);
 

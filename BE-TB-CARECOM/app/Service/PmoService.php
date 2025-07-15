@@ -32,7 +32,7 @@ class PmoService
 
     public function update(int $id, array $data): array
     {
-        $pmo = $this->pmoRepository->findById($id);
+        $pmo = $this->pmoRepository->findByUsertId($id);
          if (!$pmo) {
             return [
                 'code' => 404,
@@ -57,6 +57,32 @@ class PmoService
         }
     }
 
+    public function updateByAdmin(int $id, array $data): array
+    {
+        $pmo = $this->pmoRepository->findById($id);
+         if (!$pmo) {
+            return [
+                'code' => 404,
+                'success' => false,
+                'message' => 'PMO tidak ditemukan'
+            ];
+        }
+        try {
+            $pmo = $this->pmoRepository->update($pmo, $data);
+
+            return [
+                'success' => true,
+                'message' => 'PMO berhasil diperbarui',
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            return [
+                'code' => 500,
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui PMO'
+            ];
+        }
+    }
     public function delete(int $id): array
     {
         try {

@@ -33,4 +33,8 @@ class UserRepository
     {
         return $this->model->destroy($id);
     }
+
+    public function getPerawat(){
+        return $this->model->where('role', 'perawat')->get();
+    }
 }

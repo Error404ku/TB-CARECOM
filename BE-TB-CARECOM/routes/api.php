@@ -16,12 +16,12 @@ Route::prefix('/auth')->group(function () {
 });
 
 //middleware
-Route::middleware('auth:api')->group(function () {
+Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
     // User Routes
     Route::prefix('user')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
-        Route::delete('/user/{id}', [AuthController::class, 'delete']);
-        Route::put('/user', [AuthController::class, 'update']);
+        // Route::delete('/{id}', [AuthController::class, 'delete']);
+        Route::put('/', [AuthController::class, 'update']);
         Route::post('/refresh', [AuthController::class, 'refresh']);
     });
 

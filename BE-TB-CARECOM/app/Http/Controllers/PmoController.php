@@ -67,11 +67,22 @@ class PmoController extends Controller
         return $this->success($result['message'], 201, $result['data']);
     }
 
-    public function update(UpdatePmoRequest $request, $id)
+    public function update(UpdatePmoRequest $request)
     {
         $data = $request->validated();
 
-        $result = $this->pmoService->update($id, $data);
+        $result = $this->pmoService->update(Auth::user()->id, $data);
+        if (!$result['success']) {
+            return $this->error($result['message'], $result['code'], null);
+        }
+
+        return $this->success($result['message'], 200, $result['data']);
+    }
+    public function updateByAdmin(UpdatePmoRequest $request, $id)
+    {
+        $data = $request->validated();
+
+        $result = $this->pmoService->updateByAdmin($id, $data);
         if (!$result['success']) {
             return $this->error($result['message'], $result['code'], null);
         }

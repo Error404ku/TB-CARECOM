@@ -73,4 +73,9 @@ class PmoRepository
     {
         return $this->model->where('patient_id', $patientId)->get();
     }
+
+    public function findByUsertId(int $patientId):pmo
+    {
+        return $this->model->where('user_id', $patientId)->first();
+    }
 }

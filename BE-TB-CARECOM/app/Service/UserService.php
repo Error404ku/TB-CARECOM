@@ -128,4 +128,21 @@ class UserService
             'message' => 'User berhasil dihapus',
         ];
     }
+
+    public function getPerawat(){
+        $user = $this->userRepository->getPerawat();
+        if (!$user) {
+            return [
+                'code' => 404,
+                'success' => false,
+                'message' => 'User tidak ditemukan'
+            ];
+        }
+        return [
+            'success' => true,
+            'data' => $user,
+            'message' => 'User berhasil diambil',
+        ];
+    }
+
 }
