@@ -15,7 +15,7 @@ class EducationalMaterialService
     {
         try {
             $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
-                'folder' => 'educational_materials',
+                'folder' => 'TB_CareCom/educational_materials',
                 'transformation' => [
                     'quality' => 'auto',
                     'fetch_format' => 'auto',
@@ -71,7 +71,7 @@ class EducationalMaterialService
         try {
             if (isset($data['file'])) {
                 $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
-                    'folder' => 'educational_materials',
+                    'folder' => 'TB_CareCom/educational_materials',
                     'transformation' => [
                         'quality' => 'auto',
                         'fetch_format' => 'auto',
