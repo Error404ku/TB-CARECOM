@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
             'auth' => \App\Http\Middleware\Authenticate::class,
             'jwt.auth' => \App\Http\Middleware\Authenticate::class,
-            'jwt.verify' => \App\Http\Middleware\JWTMiddleware::class, // Tambahkan baris ini
+            'jwt.verify' => \App\Http\Middleware\JWTMiddleware::class,
         ]);
 
     })
