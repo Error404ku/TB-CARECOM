@@ -36,7 +36,17 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
         Route::prefix('pmo')->group(function () {
             Route::get('/daily-monitoring', [DailyMonitoringController::class, 'getDailyMonitoringByUser']);
             Route::put('/daily-monitoring', [DailyMonitoringController::class, 'updateDailyMonitoring']);
+        });
+    });
 
+    // Perawat Routes
+    Route::middleware('role:perawat')->group(function () {
+        Route::prefix('perawat')->group(function () {
+            Route::prefix('daily-monitoring')->group(function () {
+                Route::get('/', [DailyMonitoringController::class, 'getAllDailyMonitoring']);
+                Route::get('/{id}', [DailyMonitoringController::class, 'getDailyMonitoring']);
+                Route::get('/patient/{patientId}', [DailyMonitoringController::class, 'getDailyMonitoringByPatientId']);
+            });
         });
     });
 
