@@ -28,7 +28,7 @@ const Register: React.FC = () => {
 
   return (
     <ModernLayout title="Daftar TB CareCom" subtitle="Bergabunglah dengan komunitas pengobatan TB yang peduli">
-      <div className="max-w-2xl mx-auto">
+      <div className="mx-auto">
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50">
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
