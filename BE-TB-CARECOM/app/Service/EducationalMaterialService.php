@@ -89,8 +89,9 @@ class EducationalMaterialService
                 $data['url_file'] = $uploadResult['secure_url'];
                 $data['public_id'] = $uploadResult['public_id'];
             }
-            $educationalMaterial = $this->educationalMaterialRepository->update($educationalMaterial, $data);
-            if (!$educationalMaterial) {
+            
+            $educationalMaterialUpdated = $this->educationalMaterialRepository->update($educationalMaterial, $data);
+            if (!$educationalMaterialUpdated) {
                 if ($data['public_id']) {
                     cloudinary()->uploadApi()->destroy($data['public_id']);
                 }
@@ -101,6 +102,9 @@ class EducationalMaterialService
                 ];
             }
 
+            if ($data['public_id'] && $educationalMaterial->public_id) {
+                cloudinary()->uploadApi()->destroy($educationalMaterial->public_id);
+            }
             return [
                 'success' => true,
                 'message' => 'Educational Material berhasil diperbarui',
