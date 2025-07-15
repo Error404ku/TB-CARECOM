@@ -56,7 +56,7 @@ class PmoRepository
 
     public function findById(int $id): ?Pmo
     {
-        return $this->model->find($id);
+        return $this->model->with(['patient', 'user'])->find($id);
     }
 
     public function update(Pmo $pmo, array $data): bool

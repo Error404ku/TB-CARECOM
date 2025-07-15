@@ -97,7 +97,7 @@ class PmoService
             return [
                 'success' => true,
                 'message' => 'PMO ditemukan',
-                'data' => $pmo
+                'data' => new GetAllResource($pmo)
             ];
         } catch (\Exception $e) {
             return [

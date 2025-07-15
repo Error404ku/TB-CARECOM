@@ -63,7 +63,7 @@ class PatientRepository
 
     public function findById(int $id): ?Patient
     {
-        return $this->model->where('id', $id)->first();
+        return $this->model->where('id', $id)->with(['assignedNurse', 'pmo'])->first();
     }
 
      public function update(Patient $patient, array $data): bool
@@ -80,5 +80,4 @@ class PatientRepository
     {
         return $this->model->where('qr_code_identifier', $qrId)->first();
     }
-    
 }

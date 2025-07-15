@@ -24,7 +24,7 @@ class PatientService
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Gagal membuat patient: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat memperbarui patient'
             ];
         }
     }
@@ -76,7 +76,7 @@ class PatientService
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Gagal menghapus patient: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat memperbarui patient'
             ];
         }
     }
@@ -96,14 +96,14 @@ class PatientService
             return [
                 'success' => true,
                 'message' => 'Patient ditemukan',
-                'data' => $patient
+                'data' => new GetAllResource($patient)
             ];
         }
         catch (\Exception $e) {
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Gagal mengambil patient: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat memperbarui patient'
             ];
         }
     }
@@ -150,7 +150,7 @@ class PatientService
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Gagal mengambil daftar patient: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat memperbarui patient'
             ];
         }
     }
@@ -176,7 +176,7 @@ class PatientService
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Gagal mengambil patient: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat memperbarui patient'
             ];
         }
     }

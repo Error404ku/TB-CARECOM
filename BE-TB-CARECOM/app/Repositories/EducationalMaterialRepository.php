@@ -6,40 +6,43 @@ use App\Models\EducationalMaterial;
 
 class EducationalMaterialRepository
 {
+    public function __construct(private EducationalMaterial $model) {}
+    
     public function create(array $data)
     {
-        return EducationalMaterial::create($data);
+        return $this->model->create($data);
     }
 
     public function findById(int $id)
     {
-        return EducationalMaterial::find($id);
+        return $this->model->find($id);
     }
 
     public function update(EducationalMaterial $educationalMaterial, array $data)
     {
-        $educationalMaterial->update($data);
-        return $educationalMaterial;
+        return $educationalMaterial->update($data);
     }
 
     public function delete(int $id)
     {
-        return EducationalMaterial::destroy($id);
+        return $this->model->destroy($id);
     }
 
-    public function getAll($filters = [])
+    public function getAll(array $filters)
     {
-        $query = EducationalMaterial::query();
+        $query = $this->model->query();
 
-        if (isset($filters['search'])) {
-            $query->where('title', 'like', '%' . $filters['search'] . '%')
-                  ->orWhere('content', 'like', '%' . $filters['search'] . '%');
+        // Search functionality
+        if (isset($filters['search']) && $filters['search'] !== '') {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%");
+            });
         }
 
-        if (isset($filters['sort_by']) && isset($filters['sort_direction'])) {
-            $query->orderBy($filters['sort_by'], $filters['sort_direction']);
-        }
+        $query->orderBy('created_at', 'desc');
 
-        return $query->paginate(10);
+        $paginator = $query->paginate($filters['per_page'] ?? 10);
+        return $paginator->appends(request()->query());
     }
 }

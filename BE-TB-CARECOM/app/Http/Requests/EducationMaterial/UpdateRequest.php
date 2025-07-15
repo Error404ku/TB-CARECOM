@@ -2,12 +2,13 @@
 
 namespace App\Http\Requests\EducationMaterial;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Traits\FormRequestTrait;
+use Illuminate\Foundation\Http\FormRequest;
 
-class CreateEducationMaterial extends FormRequest
-{   
+class UpdateRequest extends FormRequest
+{
     use FormRequestTrait;
+    
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -26,7 +27,7 @@ class CreateEducationMaterial extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'file' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf,mp4',
+            'file' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf,mp4',
         ];
     }
 
@@ -35,7 +36,6 @@ class CreateEducationMaterial extends FormRequest
         return [
             'title.required' => 'Judul wajib diisi',
             'content.required' => 'Isi wajib diisi',
-            'file.required' => 'File wajib diisi',
             'file.file' => 'File harus berupa file',
             'file.mimes' => 'File harus berupa jpeg, png, jpg, gif, svg, pdf, mp4',
         ];
