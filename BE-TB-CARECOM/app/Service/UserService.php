@@ -7,6 +7,8 @@ use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\Auth\GetResource;
+use App\Http\Resources\Auth\GetAllResource;
+use App\Http\Resources\Auth\GetPerawatResource;
 
 class UserService
 {
@@ -172,5 +174,39 @@ class UserService
                 'message' => 'Terjadi kesalahan saat memperbarui user'
             ];
         }
+    }
+
+    public function getPerawat()
+    {
+        $perawat = $this->userRepository->getPerawat();
+        if ($perawat->isEmpty()) {
+            return [
+                'code' => 404,
+                'success' => false,
+                'message' => 'Tidak ada data perawat'
+            ];
+        }
+        return [
+            'success' => true,
+            'data' => GetPerawatResource::collection($perawat),
+            'message' => 'Data perawat berhasil diambil',
+        ];
+    }
+
+    public function getById(int $id)
+    {
+        $user = $this->userRepository->findById($id);
+        if (!$user) {
+            return [
+                'code' => 404,
+                'success' => false,
+                'message' => 'User tidak ditemukan'
+            ];
+        }
+        return [
+            'success' => true,
+            'data' => new GetResource($user),
+            'message' => 'Data user berhasil diambil',
+        ];
     }
 }

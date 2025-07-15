@@ -5,7 +5,7 @@ namespace App\Http\Resources\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class GetResource extends JsonResource
+class GetPerawatResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,11 +17,7 @@ class GetResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'email' => $this->email,
-            'role' => $this->role,
-            'rs' => $this->rs ?? null,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'rs' => $this->rs,
         ];
     }
 }

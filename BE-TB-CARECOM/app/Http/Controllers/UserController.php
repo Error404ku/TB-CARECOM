@@ -56,6 +56,24 @@ class UserController extends Controller
         return $this->success($user['message'], 201, $user['data'], $user['pagination'], $user['current_filters']);
     }
 
+    public function getUser(int $id)
+    {
+        $user = $this->userService->getById($id);
+        if (!$user['success']) {
+            return $this->error($user['message'], $user['code'], null);
+        }
+        return $this->success($user['message'], 200, $user['data']);
+    }
+
+    public function getPerawat()
+    {
+        $perawat = $this->userService->getPerawat();
+        if (!$perawat['success']) {
+            return $this->error($perawat['message'], $perawat['code'], null);
+        }
+        return $this->success($perawat['message'], 200, $perawat['data']);
+    }
+
     public function getProfile()
     {
         try {

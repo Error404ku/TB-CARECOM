@@ -47,6 +47,11 @@ class UserRepository
         return $paginator->appends(request()->query());
     }
 
+    public function getPerawat()
+    {
+        return $this->model->where('role', 'perawat')->get();
+    }
+
     public function findByEmail(string $email): ?User
     {
         return $this->model->where('email', $email)->first();
