@@ -43,8 +43,7 @@ class DailyMonitoringController extends Controller
     //private
     public function updateDailyMonitoring(UpdateRequest $request, int $id)
     {   
-
-        $dailyMonitoring = $this->dailyMonitoringService->update($id,Auth::user()->pmo->patient->id, $request->validated());
+        $dailyMonitoring = $this->dailyMonitoringService->updateByUser($id, $request->validated());
         if (!$dailyMonitoring['success']) {
             return $this->error($dailyMonitoring['message'], $dailyMonitoring['code'], null);
         }

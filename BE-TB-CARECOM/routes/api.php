@@ -44,6 +44,7 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
             Route::put('/user/{id}', [AuthController::class, 'updateByAdmin']);
             Route::delete('/user/{id}', [AuthController::class, 'deleteByAdmin']);
             Route::post('/create-perawat', [AuthController::class, 'createPerawat']);
+            Route::get('/users', [AuthController::class, 'getAll']);
 
             Route::prefix('educational-material')->group(function () {
                 Route::post('/', [EducationalMaterialController::class, 'createEducationMaterial']);

@@ -6,6 +6,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Resources\Auth\GetResource;
 
 class UserService
 {
@@ -129,20 +130,47 @@ class UserService
         ];
     }
 
-    public function getPerawat(){
-        $user = $this->userRepository->getPerawat();
-        if (!$user) {
+    public function getAll($filters = []): array
+    {
+        try {
+            $users = $this->userRepository->getAll($filters);
+            if ($users->isEmpty()) {
+                return [
+                    'code' => 404,
+                    'success' => false,
+                    'message' => 'Tidak ada data Patient'
+                ];
+            }
+
+            // Set pagination data
+            $pagination = [
+                'page' => $users->currentPage(),
+                'per_page' => $users->perPage(),
+                'total_items' => $users->total(),
+                'total_pages' => $users->lastPage()
+            ];
+
+            // Set current filters untuk response
+            $currentFilters = [
+                'search' => $filters['search'] ?? '',
+                'role' => $filters['role'] ?? '',
+                'sort_by' => $filters['sort_by'] ?? '',
+                'sort_direction' => $filters['sort_direction'] ?? '',
+            ];
+
             return [
-                'code' => 404,
+                'success' => true,
+                'data' => GetResource::collection($users),
+                'message' => 'Data user berhasil diambil',
+                'pagination' => $pagination,
+                'current_filters' => $currentFilters
+            ];
+        } catch (\Exception $e) {
+            return [
+                'code' => 500,
                 'success' => false,
-                'message' => 'User tidak ditemukan'
+                'message' => 'Terjadi kesalahan saat memperbarui user'
             ];
         }
-        return [
-            'success' => true,
-            'data' => $user,
-            'message' => 'User berhasil diambil',
-        ];
     }
-
 }
