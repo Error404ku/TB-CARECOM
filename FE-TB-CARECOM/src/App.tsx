@@ -1,7 +1,11 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './store/AuthContext';
 import { PrivateRoute } from './routes/PrivateRoute';
 import { AdminRoute } from './routes/AdminRoute';
+import { LoadingProvider, useLoading } from './store/LoadingContext';
+import LoadingOverlay from './components/LoadingOverlay';
+import { setLoadingHandlers } from './api/client';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -36,11 +40,21 @@ const adminRoutes = [
   { path: '/profileadmin', element: <ProfileAdmin /> },
 ];
 
-function App() {
+const LoadingSetup: React.FC = () => {
+  const { increment, decrement } = useLoading();
+  useEffect(() => {
+    setLoadingHandlers(increment, decrement);
+  }, [increment, decrement]);
+  return null;
+};
+
+const App = () => {
+  const { loading } = useLoading();
   return (
     <AuthProvider>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
         <Router>
+          <LoadingOverlay show={loading} />
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Home />} />
@@ -65,6 +79,13 @@ function App() {
       </div>
     </AuthProvider>
   );
-}
+};
 
-export default App;
+const AppWithProvider = () => (
+  <LoadingProvider>
+    <LoadingSetup />
+    <App />
+  </LoadingProvider>
+);
+
+export default AppWithProvider;

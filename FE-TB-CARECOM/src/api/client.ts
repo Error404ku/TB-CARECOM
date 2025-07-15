@@ -2,6 +2,14 @@
 import axios from 'axios';
 import { debugApi } from '../utils/debug';
 
+let incrementLoading: (() => void) | null = null;
+let decrementLoading: (() => void) | null = null;
+
+export function setLoadingHandlers(inc: () => void, dec: () => void) {
+  incrementLoading = inc;
+  decrementLoading = dec;
+}
+
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,  // URL backend dari .env
   headers: {
@@ -9,30 +17,30 @@ const apiClient = axios.create({
   },
 });
 
-// Request Interceptor - Menambahkan token Authorization
+// Request Interceptor - Menambahkan token Authorization & trigger loading
 apiClient.interceptors.request.use(
   (config: any) => {
-    // Ambil token dari localStorage atau dari auth store
+    if (incrementLoading) incrementLoading();
     const token = localStorage.getItem('authToken');
-    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
     return config;
   },
   (error: any) => {
+    if (decrementLoading) decrementLoading();
     return Promise.reject(error);
   }
 );
 
-// Response Interceptor - Error handling
+// Response Interceptor - Error handling & stop loading
 apiClient.interceptors.response.use(
   (response: any) => {
-    // Jika response berhasil, langsung return
+    if (decrementLoading) decrementLoading();
     return response;
   },
   (error: any) => {
+    if (decrementLoading) decrementLoading();
     // Handle error secara global
     if (error.response) {
       // Server merespon dengan error status
