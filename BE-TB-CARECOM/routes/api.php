@@ -44,7 +44,7 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
         Route::prefix('admin')->group(function () {
             Route::prefix('user')->group(function () {
                 Route::put('/{id}', [UserController::class, 'updateByAdmin']);
-                Route::delete('/{id}', [UserController::class, 'deleteByAdmin']);
+                Route::delete('/{id}', [UserController::class, 'delete']);
                 Route::post('/create-perawat', [UserController::class, 'createPerawat']);
             });
 

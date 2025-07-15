@@ -75,6 +75,6 @@ class EducationalMaterialController extends Controller
             return $this->error($educationalMaterial['message'], $educationalMaterial['code'], null);
         }
 
-        return $this->success($educationalMaterial['message'], 200, $educationalMaterial['data']);
+        return $this->success($educationalMaterial['message'], 200, null);
     }
 }

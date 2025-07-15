@@ -26,7 +26,7 @@ class UpdateByAdminRequest extends FormRequest
     {
         return [
             'name' => 'nullable|string',
-            'email' => 'nullable|email|unique:users,email,' . $this->user->id,
+            'email' => 'nullable|email|unique:users,email',
             'role' => 'nullable|string|in:admin,perawat,pmo',
             'rs' => 'nullable|string'
         ];
