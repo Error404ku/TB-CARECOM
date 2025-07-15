@@ -41,7 +41,7 @@ const Login: React.FC = () => {
 
   return (
     <ModernLayout title="Masuk ke TB CareCom" subtitle="Akses dashboard Anda untuk mengelola pengobatan TB">
-      <div className="max-w-md mx-auto">
+      <div className="mx-auto">
         {/* Quick Login Section */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 mb-8">
           <div className="text-center mb-8">
