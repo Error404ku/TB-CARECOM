@@ -3,12 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PmoController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\DailyMonitoringController;
 use App\Http\Controllers\EducationalMaterialController;
-use App\Http\Controllers\UserController;
 
 //public
 Route::post('/daily-monitoring', [DailyMonitoringController::class, 'createDailyMonitoring']);
+
 Route::get('/perawat', [UserController::class, 'getPerawat']);
 //auth
 Route::prefix('/auth')->group(function () {
@@ -36,6 +38,10 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
         Route::prefix('pmo')->group(function () {
             Route::get('/daily-monitoring', [DailyMonitoringController::class, 'getDailyMonitoringByUser']);
             Route::put('/daily-monitoring', [DailyMonitoringController::class, 'updateDailyMonitoring']);
+            Route::prefix('patient')->group(function () {
+                Route::get('/', [PatientController::class, 'getByUser']);
+                Route::put('/', [PatientController::class, 'update']);
+            });
         });
     });
 
@@ -43,9 +49,13 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
     Route::middleware('role:perawat')->group(function () {
         Route::prefix('perawat')->group(function () {
             Route::prefix('daily-monitoring')->group(function () {
-                Route::get('/', [DailyMonitoringController::class, 'getAllDailyMonitoring']);
-                Route::get('/{id}', [DailyMonitoringController::class, 'getDailyMonitoring']);
-                Route::get('/patient/{patientId}', [DailyMonitoringController::class, 'getDailyMonitoringByPatientId']);
+                Route::get('/{patientId}', [DailyMonitoringController::class, 'getDailyMonitoringByPatientId']);
+            });
+
+            Route::prefix('patient')->group(function () {
+                Route::get('/', [PatientController::class, 'getByAssignedNurse']);
+                Route::get('/{id}', [PatientController::class, 'getById']);
+                Route::put('/restart-treatment-date/{id}', [PatientController::class, 'restartTreatmentDate']);
             });
         });
     });
@@ -79,6 +89,14 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
                 Route::get('/', [DailyMonitoringController::class, 'getAllDailyMonitoring']);
                 Route::get('/{id}', [DailyMonitoringController::class, 'getDailyMonitoring']);
                 Route::get('/patient/{patientId}', [DailyMonitoringController::class, 'getDailyMonitoringByPatientId']);
+            });
+
+            Route::prefix('patient')->group(function () {
+                Route::get('/', [PatientController::class, 'getAll']);
+                Route::get('/{id}', [PatientController::class, 'getById']);
+                Route::get('/assigned-nurse/{assignedNurseId}', [PatientController::class, 'getByAssignedNurseId']);
+                Route::put('/{id}', [PatientController::class, 'updateByAdmin']);
+                Route::delete('/{id}', [PatientController::class, 'delete']);
             });
         });
     });
