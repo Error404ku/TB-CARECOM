@@ -77,8 +77,6 @@ class AuthController extends Controller
         }
     }
 
-    
-
     public function login(LoginRequest $request)
     {
         try {
@@ -109,40 +107,7 @@ class AuthController extends Controller
         }
         return $this->success('Logout berhasil', 200, []);
     }
-
-    public function update(UpdateRequest $request)
-    {   
-        $user = $this->userService->update(Auth::user()->id, $request->validated());
-        if (!$user['success']) {
-            return $this->error($user['message'], $user['code'], null);
-        }
-
-        return $this->success($user['message'], 200, $user['data']);
-    }
-
-    public function updateByAdmin(int $id, UpdateByAdminRequest $request)
-    {
-        $user = $this->userService->update($id, $request->validated());
-        if (!$user['success']) {
-            return $this->error($user['message'], $user['code'], null);
-        }
-
-        return $this->success($user['message'], 200, $user['data'],);
-    }
-
-    public function delete($id)
-    {
-        if (!Auth::user()->role == 'admin') {
-            return $this->error('Anda tidak memiliki akses', 403);
-        }
-
-        $user = $this->userService->delete($id);
-        if (!$user['success']) {
-            return $this->error($user['message'], $user['code'], null);
-        }
-        return $this->success('User berhasil dihapus', 200, null);
-    }
-
+    
     public function refresh()
     {
         try {

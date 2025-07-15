@@ -5,10 +5,11 @@ use App\Http\Controllers\PmoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DailyMonitoringController;
 use App\Http\Controllers\EducationalMaterialController;
+use App\Http\Controllers\UserController;
 
 //public
 Route::post('/daily-monitoring', [DailyMonitoringController::class, 'createDailyMonitoring']);
-
+Route::get('/perawat', [UserController::class, 'getPerawat']);
 //auth
 Route::prefix('/auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -19,9 +20,9 @@ Route::prefix('/auth')->group(function () {
 Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
     // User Routes
     Route::prefix('user')->group(function () {
+        Route::get('/profile', [UserController::class, 'getProfile']);
         Route::post('/logout', [AuthController::class, 'logout']);
-        // Route::delete('/{id}', [AuthController::class, 'delete']);
-        Route::put('/', [AuthController::class, 'update']);
+        Route::put('/', [UserController::class, 'update']);
         Route::post('/refresh', [AuthController::class, 'refresh']);
     });
 
@@ -44,7 +45,7 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
             Route::put('/user/{id}', [AuthController::class, 'updateByAdmin']);
             Route::delete('/user/{id}', [AuthController::class, 'deleteByAdmin']);
             Route::post('/create-perawat', [AuthController::class, 'createPerawat']);
-            Route::get('/users', [AuthController::class, 'getAll']);
+            Route::get('/users', [UserController::class, 'getUsers']);
 
             Route::prefix('educational-material')->group(function () {
                 Route::post('/', [EducationalMaterialController::class, 'createEducationMaterial']);
