@@ -1,19 +1,36 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ModernLayout from '../layouts/ModernLayout';
+import { login as loginApi } from '../api/authApi';
+import { jwtDecode } from 'jwt-decode';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    role: 'pmo'
   });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt:', formData);
+    try {
+      const response = await loginApi(formData.email, formData.password);
+      const token = response.data.data.token;
+      // Decode JWT to get user info
+      const decoded: any = jwtDecode(token);
+      // Save token (and user info if needed)
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', decoded.role);
+      // Redirect based on role
+      if (decoded.role === 'superadmin') {
+        navigate('/superadmin');
+      } else if (decoded.role === 'admin') {
+        navigate('/dashboardadmin');
+      } else if (decoded.role === 'pmo') {
+        navigate('/dashboardpmo');
+      }
+    } catch (error: any) {
+      alert(error?.response?.data?.meta?.message || 'Login gagal');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -132,22 +149,6 @@ const Login: React.FC = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 placeholder="Masukkan kata sandi Anda"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Peran
-              </label>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              >
-                <option value="pmo">Keluarga Pasien (PMO)</option>
-                <option value="admin">Perawat (Admin)</option>
-                <option value="superadmin">Super Admin</option>
-              </select>
             </div>
 
             <div className="flex items-center justify-between">
