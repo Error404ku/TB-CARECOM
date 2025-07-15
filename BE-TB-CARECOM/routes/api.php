@@ -36,6 +36,7 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
         Route::prefix('pmo')->group(function () {
             Route::get('/daily-monitoring', [DailyMonitoringController::class, 'getDailyMonitoringByUser']);
             Route::put('/daily-monitoring', [DailyMonitoringController::class, 'updateDailyMonitoring']);
+
         });
     });
 
@@ -60,14 +61,14 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
                 Route::get('/{id}', [PmoController::class, 'getById']);
                 Route::get('/patient/{patientId}', [PmoController::class, 'getByPatient']);
                 Route::post('/', [PmoController::class, 'create']);
-                Route::put('/{id}', [PmoController::class, 'update']);
+                Route::put('/{id}', [PmoController::class, 'updateByAdmin']);
                 Route::delete('/{id}', [PmoController::class, 'delete']);
             });
 
             Route::prefix('daily-monitoring')->group(function () {
-                Route::get('/', [DailyMonitoringController::class, 'getAll']);
-                Route::get('/{id}', [DailyMonitoringController::class, 'getById']);
-                Route::get('/patient/{patientId}', [DailyMonitoringController::class, 'getByPatientId']);
+                Route::get('/', [DailyMonitoringController::class, 'getAllDailyMonitoring']);
+                Route::get('/{id}', [DailyMonitoringController::class, 'getDailyMonitoring']);
+                Route::get('/patient/{patientId}', [DailyMonitoringController::class, 'getDailyMonitoringByPatientId']);
             });
         });
     });
