@@ -6,9 +6,13 @@ services:
       target: production
     container_name: tb-carecom-frontend
     ports:
-      - "5173:80"  # ini sudah betul
-    volumes:
-      - ./ssl:/etc/nginx/ssl:ro  # ⬅️ mount SSL certs ke dalam container
+      - "5173:80"  # <- ini yang benar! port host 5173 -> container 80
+    environment:
+      - NODE_ENV=production
     restart: unless-stopped
     networks:
       - tb-carecom-network
+
+networks:
+  tb-carecom-network:
+    driver: bridge
