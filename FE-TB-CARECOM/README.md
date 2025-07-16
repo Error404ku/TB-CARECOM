@@ -23,6 +23,86 @@ Fitur download QR code tersedia di Dashboard PMO. QR code akan berisi URL yang t
 
 Contoh: Jika `VITE_QRCODE_URL` adalah `https://example.com/scan/` dan API mengembalikan UUID `96381c89-525d-472f-b22c-62892fdb850a`, maka QR code akan berisi URL: `https://example.com/scan/96381c89-525d-472f-b22c-62892fdb850a`
 
+## Docker Deployment
+
+### 🐳 Production Deployment
+
+1. **Setup Environment Variables**
+   ```bash
+   # Copy environment template
+   cp env.production.example .env
+   
+   # Edit with your production values
+   nano .env
+   ```
+
+2. **Build and Run with Docker Compose**
+   ```bash
+   # Build and start the application
+   docker-compose up -d --build
+   
+   # Check logs
+   docker-compose logs -f frontend
+   
+   # Stop the application
+   docker-compose down
+   ```
+
+3. **Access the Application**
+   - Frontend: http://localhost:3000
+   - Health Check: http://localhost:3000/health
+
+### 🔧 Development with Docker
+
+1. **Start Development Environment**
+   ```bash
+   # Start development server with hot reload
+   docker-compose -f docker-compose.dev.yml up -d --build
+   
+   # View logs
+   docker-compose -f docker-compose.dev.yml logs -f frontend-dev
+   ```
+
+2. **Access Development Server**
+   - Development Server: http://localhost:5173
+   - Hot reload enabled for `/src` directory
+
+### 📦 Docker Commands
+
+```bash
+# Build production image only
+docker build -t tb-carecom-frontend .
+
+# Run production container
+docker run -d -p 3000:80 --name tb-carecom-frontend tb-carecom-frontend
+
+# Build development image
+docker build -f Dockerfile.dev -t tb-carecom-frontend:dev .
+
+# Run development container
+docker run -d -p 5173:5173 -v $(pwd)/src:/app/src --name tb-carecom-dev tb-carecom-frontend:dev
+```
+
+### 🔧 Configuration Files
+
+- `Dockerfile` - Multi-stage production build
+- `Dockerfile.dev` - Development build with hot reload
+- `docker-compose.yml` - Production deployment
+- `docker-compose.dev.yml` - Development environment
+- `nginx.conf` - Nginx configuration for production
+- `.dockerignore` - Files excluded from Docker build
+
+### 🚀 Production Features
+
+- ✅ Multi-stage build for optimized image size
+- ✅ Nginx serving static files with gzip compression
+- ✅ Security headers configured
+- ✅ Health check endpoint (`/health`)
+- ✅ Proper SPA routing support
+- ✅ Static asset caching
+- ✅ Container restart policies
+- ✅ Docker networking
+
 ## Setup
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

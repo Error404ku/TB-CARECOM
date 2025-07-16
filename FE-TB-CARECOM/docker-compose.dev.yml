@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Frontend development service with hot reload
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: tb-carecom-frontend-dev
+    ports:
+      - "5173:5173"  # Vite default port
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8000/api
+      - VITE_QRCODE_URL=http://localhost:3000/scan/
+    volumes:
+      # Mount source code for hot reload
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.app.json:/app/tsconfig.app.json
+      - ./package.json:/app/package.json
+      # Exclude node_modules to avoid conflicts
+      - /app/node_modules
+    networks:
+      - tb-carecom-dev-network
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  # Backend service (placeholder for development)
+  # backend-dev:
+  #   image: your-backend-dev-image:latest
+  #   container_name: tb-carecom-backend-dev
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - NODE_ENV=development
+  #     - DATABASE_URL=postgresql://user:password@db-dev:5432/tbcarecom_dev
+  #     - JWT_SECRET=dev-jwt-secret
+  #   volumes:
+  #     - ./backend:/app
+  #     - /app/node_modules
+  #   networks:
+  #     - tb-carecom-dev-network
+  #   depends_on:
+  #     - db-dev
+
+  # Development database
+  # db-dev:
+  #   image: postgres:15-alpine
+  #   container_name: tb-carecom-db-dev
+  #   environment:
+  #     - POSTGRES_DB=tbcarecom_dev
+  #     - POSTGRES_USER=user
+  #     - POSTGRES_PASSWORD=password
+  #   volumes:
+  #     - postgres_dev_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5433:5432"  # Different port to avoid conflicts
+  #   restart: unless-stopped
+  #   networks:
+  #     - tb-carecom-dev-network
+
+networks:
+  tb-carecom-dev-network:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+    driver: local 
