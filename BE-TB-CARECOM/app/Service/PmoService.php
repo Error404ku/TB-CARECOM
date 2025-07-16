@@ -203,4 +203,9 @@ class PmoService
             ];
         }
     }
+
+    public function countPmo(): int
+    {
+        return $this->pmoRepository->countAll();
+    }
 }

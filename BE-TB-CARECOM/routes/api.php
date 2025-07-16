@@ -5,6 +5,7 @@ use App\Http\Controllers\PmoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DailyMonitoringController;
 use App\Http\Controllers\EducationalMaterialController;
 
@@ -64,6 +65,8 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
     // Admin Routes
     Route::middleware('role:admin')->group(function () {
         Route::prefix('admin')->group(function () {
+            Route::get('/dashboard', [DashboardController::class, 'dashboardAdmin']);
+            
             Route::prefix('user')->group(function () {
                 Route::get('/', [UserController::class, 'getUsers']);
                 Route::get('/{id}', [UserController::class, 'getUser']);

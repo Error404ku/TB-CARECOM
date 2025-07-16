@@ -209,4 +209,9 @@ class UserService
             'message' => 'Data user berhasil diambil',
         ];
     }
+
+    public function countPerawat(): int
+    {
+        return $this->userRepository->countPerawat();
+    }
 }

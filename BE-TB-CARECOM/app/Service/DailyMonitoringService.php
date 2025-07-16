@@ -206,4 +206,9 @@ class DailyMonitoringService
             ];
         }
     }
+
+    public function countDailyMonitoring(): int
+    {
+        return $this->dailyMonitoringRepository->countDailyMonitoring();
+    }
 }

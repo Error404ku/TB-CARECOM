@@ -71,4 +71,9 @@ class UserRepository
     {
         return $this->model->destroy($id);
     }
+
+    public function countPerawat(): int
+    {
+        return $this->model->where('role', 'perawat')->count();
+    }
 }

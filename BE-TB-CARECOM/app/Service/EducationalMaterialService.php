@@ -233,4 +233,9 @@ class EducationalMaterialService
             ];
         }
     }
+
+    public function countEducationalMaterial(): int
+    {
+        return $this->educationalMaterialRepository->countAll();
+    }
 }

@@ -78,4 +78,9 @@ class PmoRepository
     {
         return $this->model->where('user_id', $patientId)->first();
     }
+
+    public function countAll(): int
+    {
+        return $this->model->count();
+    }
 }

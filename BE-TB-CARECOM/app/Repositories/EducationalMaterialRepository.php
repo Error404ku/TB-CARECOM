@@ -45,4 +45,9 @@ class EducationalMaterialRepository
         $paginator = $query->paginate($filters['per_page'] ?? 10);
         return $paginator->appends(request()->query());
     }
+
+    public function countAll(): int
+    {
+        return $this->model->count();
+    }
 }

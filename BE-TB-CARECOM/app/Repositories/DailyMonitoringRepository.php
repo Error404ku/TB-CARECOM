@@ -101,4 +101,9 @@ class DailyMonitoringRepository
         $paginator = $query->with('patient')->paginate($filters['per_page'] ?? 10);
         return $paginator->appends(request()->query());
     }
+
+    public function countDailyMonitoring(): int
+    {
+        return $this->model->whereDate('created_at', now())->count();
+    }
 }
