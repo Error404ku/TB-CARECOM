@@ -67,7 +67,39 @@ Contoh: Jika `VITE_QRCODE_URL` adalah `https://example.com/scan/` dan API mengem
    - Development Server: http://localhost:5173
    - Hot reload enabled for `/src` directory
 
-### 📦 Docker Commands
+### ⚡ Quick Start
+
+**Linux/Mac:**
+```bash
+# Production deployment
+./deploy.sh prod
+
+# Development deployment
+./deploy.sh dev
+
+# View logs
+./deploy.sh logs
+
+# Stop all containers
+./deploy.sh stop
+```
+
+**Windows:**
+```cmd
+# Production deployment
+deploy.bat prod
+
+# Development deployment
+deploy.bat dev
+
+# View logs
+deploy.bat logs
+
+# Stop all containers
+deploy.bat stop
+```
+
+### 📦 Manual Docker Commands
 
 ```bash
 # Build production image only
