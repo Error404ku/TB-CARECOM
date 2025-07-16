@@ -1,0 +1,43 @@
+# Docker Compose Override Example
+# Copy this file to docker-compose.override.yml and customize for your environment
+# This file is automatically loaded by docker-compose and overrides settings in docker-compose.yml
+
+version: '3.8'
+
+services:
+  app:
+    # Override environment variables for development
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - LOG_LEVEL=debug
+    # Mount source code for development (hot reload)
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - /var/www/html/node_modules
+    # Override ports if needed
+    ports:
+      - "8080:80"  # Change to different port if 8082 is occupied
+
+  # Database configuration removed - using external Supabase database
+  # No local database overrides needed
+
+# Add additional services for development
+# Example: Redis, Mailhog, etc.
+#  redis:
+#    image: redis:7-alpine
+#    container_name: tb-carecom-redis
+#    ports:
+#      - "6379:6379"
+#    networks:
+#      - tb-carecom-network
+#
+#  mailhog:
+#    image: mailhog/mailhog
+#    container_name: tb-carecom-mailhog
+#    ports:
+#      - "1025:1025"
+#      - "8025:8025"
+#    networks:
+#      - tb-carecom-network
