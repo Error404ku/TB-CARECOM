@@ -21,13 +21,14 @@ services:
     depends_on:
       - frontend
     ports:
-      - "8080:80"     # HTTP internal
-      - "8443:443"    # HTTPS external (bisa dipakai Cloudflare)
+      - "8880:80"     # HTTP fallback (jarang dipakai, aman)
+      - "8443:443"    # HTTPS, didukung Cloudflare
     volumes:
       - ./nginx.simple.conf:/etc/nginx/conf.d/default.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     networks:
       - tb-carecom-network
+
 
 
 networks:
