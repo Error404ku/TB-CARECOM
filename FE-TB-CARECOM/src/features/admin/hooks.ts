@@ -11,10 +11,10 @@ import {
   createPMO,
   updatePMO,
   deletePMO,
-
   getAllDailyMonitoringAdmin,
   getDailyMonitoringByIdAdmin,
   getDailyMonitoringByPatientIdAdmin,
+  getAdminDashboard,
   type User,
   type UserFilters,
   type CreatePerawatRequest,
@@ -22,7 +22,8 @@ import {
   type PMO,
   type PMOFilters,
   type CreatePMORequest,
-  type DailyMonitoringAdmin
+  type DailyMonitoringAdmin,
+  type AdminDashboardData
 } from '../../api/adminApi';
 
 // Import education API functions
@@ -487,5 +488,39 @@ export const useDailyMonitoringAdmin = () => {
     fetchMonitoringById,
     fetchMonitoringByPatient,
     refetch: fetchAllMonitoring
+  };
+};
+
+// ================================
+// DASHBOARD HOOKS
+// ================================
+
+export const useAdminDashboard = () => {
+  const [dashboardData, setDashboardData] = useState<AdminDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getAdminDashboard();
+      setDashboardData(response.data.data);
+    } catch (err: any) {
+      setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat mengambil data dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  return {
+    dashboardData,
+    loading,
+    error,
+    refetch: fetchDashboardData
   };
 }; 
