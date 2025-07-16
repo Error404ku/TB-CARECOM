@@ -162,6 +162,22 @@ export interface EducationalMaterial {
   updated_at: string;
 }
 
+// Dashboard interface
+export interface AdminDashboardData {
+  pmo: number;
+  user: number;
+  daily_monitoring: number;
+  educational_material: number;
+}
+
+export interface AdminDashboardResponse {
+  meta: {
+    code: number;
+    message: string;
+  };
+  data: AdminDashboardData;
+}
+
 // ================================
 // USER MANAGEMENT APIs
 // ================================
@@ -323,7 +339,7 @@ export const getDailyMonitoringByPatientIdAdmin = async (patientId: number) => {
  * Get admin dashboard data
  */
 export const getAdminDashboard = () => {
-  return privateClient.get('/admin/dashboard');
+  return privateClient.get<AdminDashboardResponse>('/admin/dashboard');
 };
 
 export const getUserById = (id: number) => {

@@ -1,22 +1,17 @@
 // features/admin/pages/AdminDashboard.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useUsers, usePMOs, useDailyMonitoringAdmin } from '../hooks';
-import { useEducationalMaterials } from '../../education/hooks';
+import { useAdminDashboard } from '../hooks';
 import ModernLayout from '../../../layouts/ModernLayout';
 
 const AdminDashboard: React.FC = () => {
-  const { users, loading: usersLoading } = useUsers({ role: 'perawat' });
-  const { pmos, loading: pmosLoading } = usePMOs();
-  const { monitoring, loading: monitoringLoading } = useDailyMonitoringAdmin();
-  const { data: educationData, loading: educationLoading } = useEducationalMaterials({ page: 1, per_page: 1 });
+  const { dashboardData, loading, error } = useAdminDashboard();
 
-  // Calculate stats
-  const totalPerawat = users.length;
-  const totalPMO = pmos.length;
-  const totalMonitoring = monitoring.length;
-  const totalEducationalMaterials = educationData?.pagination?.total_items || 0;
-  const recentMonitoring = monitoring.slice(0, 5);
+  // Get stats from dashboard data
+  const totalPerawat = dashboardData?.user || 0;
+  const totalPMO = dashboardData?.pmo || 0;
+  const totalMonitoring = dashboardData?.daily_monitoring || 0;
+  const totalEducationalMaterials = dashboardData?.educational_material || 0;
 
   const StatCard = ({ title, value, color, icon, to }: {
     title: string;
@@ -37,6 +32,16 @@ const AdminDashboard: React.FC = () => {
       </div>
     </Link>
   );
+
+  if (error) {
+    return (
+      <ModernLayout title="Dashboard Admin" subtitle="Kelola sistem TB CARECOM secara menyeluruh">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <p>Error: {error}</p>
+        </div>
+      </ModernLayout>
+    );
+  }
 
   return (
     <ModernLayout title="Dashboard Admin" subtitle="Kelola sistem TB CARECOM secara menyeluruh">
@@ -61,28 +66,28 @@ const AdminDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Total Perawat"
-          value={usersLoading ? '...' : totalPerawat}
+          value={loading ? '...' : totalPerawat}
           color="bg-blue-600"
           icon="👩‍⚕️"
           to="/admin/users"
         />
         <StatCard
           title="Total PMO"
-          value={pmosLoading ? '...' : totalPMO}
+          value={loading ? '...' : totalPMO}
           color="bg-green-600"
           icon="👥"
           to="/admin/pmo"
         />
         <StatCard
           title="Monitoring Hari Ini"
-          value={monitoringLoading ? '...' : totalMonitoring}
+          value={loading ? '...' : totalMonitoring}
           color="bg-purple-600"
           icon="📊"
           to="/admin/monitoring"
         />
         <StatCard
           title="Materi Edukasi"
-          value={educationLoading ? '...' : totalEducationalMaterials}
+          value={loading ? '...' : totalEducationalMaterials}
           color="bg-orange-600"
           icon="📚"
           to="/admin/educational-materials"
@@ -114,47 +119,42 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Recent Monitoring */}
+      {/* Info Section */}
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Monitoring Terbaru</h2>
-          <Link
-            to="/admin/monitoring"
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Lihat Semua →
-          </Link>
+          <h2 className="text-xl font-semibold text-gray-900">Informasi Sistem</h2>
         </div>
         
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 overflow-hidden">
-          {monitoringLoading ? (
+          {loading ? (
             <div className="p-6 text-center">
-              <p className="text-gray-500">Memuat data monitoring...</p>
-            </div>
-          ) : recentMonitoring.length === 0 ? (
-            <div className="p-6 text-center">
-              <p className="text-gray-500">Belum ada data monitoring hari ini</p>
+              <p className="text-gray-500">Memuat data sistem...</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
-              {recentMonitoring.map((item) => (
-                <div key={item.id} className="p-6 hover:bg-gray-50">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          ID: {item.id}
-                        </span>
-                        <span className="text-sm font-medium text-gray-900">{item.patient.name}</span>
-                      </div>
-                      <p className="text-gray-600 text-sm mb-1">{item.description}</p>
-                      <p className="text-gray-500 text-xs">
-                        Waktu obat: {new Date(item.medication_time).toLocaleString('id-ID')}
-                      </p>
-                    </div>
-                  </div>
+            <div className="p-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">{totalPerawat}</div>
+                  <div className="text-sm text-gray-600">Perawat Terdaftar</div>
                 </div>
-              ))}
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{totalPMO}</div>
+                  <div className="text-sm text-gray-600">PMO Aktif</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">{totalMonitoring}</div>
+                  <div className="text-sm text-gray-600">Monitoring Hari Ini</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">{totalEducationalMaterials}</div>
+                  <div className="text-sm text-gray-600">Materi Edukasi</div>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-600 text-center">
+                  Dashboard ini menampilkan ringkasan data sistem TB CARECOM secara real-time
+                </p>
+              </div>
             </div>
           )}
         </div>
