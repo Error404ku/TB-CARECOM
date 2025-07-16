@@ -10,6 +10,10 @@ use App\Http\Controllers\DailyMonitoringController;
 use App\Http\Controllers\EducationalMaterialController;
 
 //public
+Route::prefix('educational-material')->group(function () {
+    Route::get('/', [EducationalMaterialController::class, 'getAll']);
+    Route::get('/{id}', [EducationalMaterialController::class, 'getById']);
+});
 Route::post('/daily-monitoring', [DailyMonitoringController::class, 'createDailyMonitoring']);
 
 Route::get('/perawat', [UserController::class, 'getPerawat']);
@@ -27,11 +31,6 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::put('/', [UserController::class, 'update']);
         Route::post('/refresh', [AuthController::class, 'refresh']);
-    });
-
-    Route::prefix('educational-material')->group(function () {
-        Route::get('/', [EducationalMaterialController::class, 'getAll']);
-        Route::get('/{id}', [EducationalMaterialController::class, 'getById']);
     });
 
     // PMO Routes
@@ -66,7 +65,7 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
     Route::middleware('role:admin')->group(function () {
         Route::prefix('admin')->group(function () {
             Route::get('/dashboard', [DashboardController::class, 'dashboardAdmin']);
-            
+
             Route::prefix('user')->group(function () {
                 Route::get('/', [UserController::class, 'getUsers']);
                 Route::get('/{id}', [UserController::class, 'getUser']);
