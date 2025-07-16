@@ -38,15 +38,16 @@ const DashboardPMO: React.FC = () => {
     description: ''
   });
 
+  // Track loading per tab
+  const [loadingPatient, setLoadingPatient] = useState(false);
+  const [loadingMonitoring, setLoadingMonitoring] = useState(false);
 
-  const loadDashboardData = async () => {
-    setLoading(true);
+  // Lazy load patient data
+  const loadPatientDataLazy = async () => {
+    if (patientData || loadingPatient) return;
+    setLoadingPatient(true);
     try {
-      const [patientResponse, monitoringResponse] = await Promise.all([
-        getPatientData(),
-        getAllDailyMonitoring()
-      ]);
-
+      const patientResponse = await getPatientData();
       if (patientResponse.data && patientResponse.data.data) {
         setPatientData(patientResponse.data.data);
         // Initialize edit form with current patient data
@@ -61,30 +62,60 @@ const DashboardPMO: React.FC = () => {
       } else if (patientResponse.data && (patientResponse.data.status === 404 || patientResponse.data.status === 401)) {
         // API not available or unauthorized
         console.warn('Patient API issue:', patientResponse.data.message);
-        // Don't show error popup, just log it
       }
+    } catch (error) {
+      console.error('Error loading patient data:', error);
+      showError('Gagal Memuat Data', 'Terjadi kesalahan saat memuat data pasien.');
+    } finally {
+      setLoadingPatient(false);
+    }
+  };
 
+  // Lazy load daily monitoring data
+  const loadDailyMonitoringLazy = async () => {
+    if (dailyMonitoring.length > 0 || loadingMonitoring) return;
+    setLoadingMonitoring(true);
+    try {
+      const monitoringResponse = await getAllDailyMonitoring();
       if (monitoringResponse.data && monitoringResponse.data.data) {
         setDailyMonitoring(monitoringResponse.data.data);
       } else if (monitoringResponse.data && (monitoringResponse.data.status === 404 || monitoringResponse.data.status === 401)) {
         // API not available or unauthorized
         console.warn('Monitoring API issue:', monitoringResponse.data.message);
-        // Don't show error popup, just log it
       }
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
-      showError('Gagal Memuat Data', 'Terjadi kesalahan saat memuat data dashboard.');
+      console.error('Error loading monitoring data:', error);
+      showError('Gagal Memuat Data', 'Terjadi kesalahan saat memuat data monitoring.');
     } finally {
-      setLoading(false);
+      setLoadingMonitoring(false);
     }
   };
 
-  // Load data on component mount - but wait for auth to be ready
+  // Load data on tab change
   useEffect(() => {
     if (!authLoading) {
-      loadDashboardData();
+      if (selectedTab === 'overview') {
+        // Overview: load both if not loaded
+        if (!patientData) loadPatientDataLazy();
+        if (dailyMonitoring.length === 0) loadDailyMonitoringLazy();
+      } else if (selectedTab === 'patient') {
+        if (!patientData) loadPatientDataLazy();
+      } else if (selectedTab === 'monitoring') {
+        if (dailyMonitoring.length === 0) loadDailyMonitoringLazy();
+      }
     }
-  }, [authLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTab, authLoading]);
+
+  // Reload helpers for edit
+  const reloadPatientData = async () => {
+    setPatientData(null);
+    await loadPatientDataLazy();
+  };
+  const reloadMonitoringData = async () => {
+    setDailyMonitoring([]);
+    await loadDailyMonitoringLazy();
+  };
 
   const handleUpdatePatient = async () => {
     try {
@@ -98,7 +129,7 @@ const DashboardPMO: React.FC = () => {
         if (response.data.status === 200) {
           showSuccess('Berhasil!', 'Data pasien berhasil diperbarui.');
           setIsEditingPatient(false);
-          loadDashboardData(); // Reload data
+          reloadPatientData(); // Reload data
         }
       }
     } catch (error) {
@@ -119,7 +150,7 @@ const DashboardPMO: React.FC = () => {
         if (response.data.status === 200) {
           showSuccess('Berhasil!', 'Data monitoring berhasil diperbarui.');
           setEditingMonitoring(null);
-          loadDashboardData(); // Reload data
+          reloadMonitoringData(); // Reload data
         }
       }
     } catch (error) {
@@ -202,7 +233,7 @@ const DashboardPMO: React.FC = () => {
     }
   };
 
-  if (authLoading || loading) {
+  if (authLoading || (selectedTab === 'overview' && (loadingPatient || loadingMonitoring)) || (selectedTab === 'patient' && loadingPatient) || (selectedTab === 'monitoring' && loadingMonitoring)) {
     return (
       <ModernLayout title="Dashboard PMO" subtitle="Memuat data...">
         <div className="flex items-center justify-center min-h-96">
