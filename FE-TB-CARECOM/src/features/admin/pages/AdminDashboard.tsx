@@ -2,17 +2,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useUsers, usePMOs, useDailyMonitoringAdmin } from '../hooks';
+import { useEducationalMaterials } from '../../education/hooks';
 import ModernLayout from '../../../layouts/ModernLayout';
 
 const AdminDashboard: React.FC = () => {
   const { users, loading: usersLoading } = useUsers({ role: 'perawat' });
   const { pmos, loading: pmosLoading } = usePMOs();
   const { monitoring, loading: monitoringLoading } = useDailyMonitoringAdmin();
+  const { data: educationData, loading: educationLoading } = useEducationalMaterials({ page: 1, per_page: 1 });
 
   // Calculate stats
   const totalPerawat = users.length;
   const totalPMO = pmos.length;
   const totalMonitoring = monitoring.length;
+  const totalEducationalMaterials = educationData?.pagination?.total_items || 0;
   const recentMonitoring = monitoring.slice(0, 5);
 
   const StatCard = ({ title, value, color, icon, to }: {
@@ -79,7 +82,7 @@ const AdminDashboard: React.FC = () => {
         />
         <StatCard
           title="Materi Edukasi"
-          value="12"
+          value={educationLoading ? '...' : totalEducationalMaterials}
           color="bg-orange-600"
           icon="📚"
           to="/admin/educational-materials"

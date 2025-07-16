@@ -11,6 +11,7 @@ export * as userApi from './userApi';
 export * as pmoApi from './pmoApi';
 export * as perawatApi from './perawatApi';
 export * as publicApi from './publicApi';
+export * as educationApi from './educationApi';
 
 // Authentication APIs
 export * from './authApi';
@@ -23,6 +24,9 @@ export * from './userApi';
 
 // Public APIs
 export * from './publicApi';
+
+// Education APIs
+export * from './educationApi';
 
 // PMO APIs
 export * from './pmoApi';
@@ -57,3 +61,11 @@ export {
   getUserReports,
   createUserReport
 } from './userApi'; 
+
+// Education functions (ALL ROLES)
+export {
+  getAllEducationalMaterials,
+  getEducationalMaterialById,
+  getPublicEducationalMaterials,
+  getPublicEducationalMaterialById
+} from './educationApi'; 

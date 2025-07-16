@@ -27,6 +27,23 @@ import {
   type DailyMonitoringAdmin
 } from '../../api/adminApi';
 
+// Import education API functions
+import {
+  getAllEducationalMaterials,
+  getEducationalMaterialById,
+  createEducationalMaterial as createEducation,
+  updateEducationalMaterial as updateEducation,
+  deleteEducationalMaterial as deleteEducation
+} from '../../api/educationApi';
+
+import type {
+  EducationalMaterial,
+  EducationalMaterialResponse,
+  EducationalMaterialFilters,
+  CreateEducationalMaterialRequest,
+  UpdateEducationalMaterialRequest
+} from '../education/types';
+
 // ================================
 // USER MANAGEMENT HOOKS
 // ================================
@@ -250,74 +267,162 @@ export const usePMOsByPatient = (patientId?: number) => {
 };
 
 // ================================
-// EDUCATIONAL MATERIAL HOOKS
+// EDUCATIONAL MATERIAL MANAGEMENT HOOKS
 // ================================
 
-export const useEducationalMaterial = () => {
-  const [loading, setLoading] = useState(false);
+export const useEducationalMaterialsAdmin = () => {
+  const [materials, setMaterials] = useState<EducationalMaterial[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<any>(null);
 
-  const createMaterial = async (title: string, content: string, file?: File) => {
+  const fetchMaterials = async (filters?: EducationalMaterialFilters) => {
     try {
       setLoading(true);
       setError(null);
-      
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
-      if (file) {
-        formData.append('file', file);
-      }
-
-      await createEducationalMaterial(formData);
-      return true;
+      const response = await getAllEducationalMaterials(filters);
+      setMaterials(response.data);
+      setPagination(response.pagination);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Terjadi kesalahan saat membuat materi edukasi');
-      return false;
+      setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat mengambil data materi edukasi');
     } finally {
       setLoading(false);
     }
   };
 
-  const updateMaterial = async (id: number, title: string, content: string, file?: File) => {
+  const createMaterial = async (data: CreateEducationalMaterialRequest) => {
     try {
-      setLoading(true);
       setError(null);
-      
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
-      if (file) {
-        formData.append('file', file);
-      }
-
-      await updateEducationalMaterial(id, formData);
+      await createEducation(data);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Terjadi kesalahan saat mengupdate materi edukasi');
+      setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat membuat materi edukasi');
       return false;
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const updateMaterial = async (id: number, data: UpdateEducationalMaterialRequest) => {
+    try {
+      setError(null);
+      await updateEducation(id, data);
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat mengupdate materi edukasi');
+      return false;
     }
   };
 
   const deleteMaterial = async (id: number) => {
     try {
-      setLoading(true);
       setError(null);
-      await deleteEducationalMaterial(id);
+      await deleteEducation(id);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Terjadi kesalahan saat menghapus materi edukasi');
+      setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat menghapus materi edukasi');
+      return false;
+    }
+  };
+
+  // Initial fetch with default filters
+  useEffect(() => {
+    fetchMaterials({
+      page: 1,
+      per_page: 10,
+      sort_by: 'created_at',
+      order_by: 'desc'
+    });
+  }, []);
+
+  const refetch = async (newFilters?: EducationalMaterialFilters) => {
+    await fetchMaterials(newFilters);
+  };
+
+  return {
+    materials,
+    loading,
+    error,
+    pagination,
+    createMaterial,
+    updateMaterial,
+    deleteMaterial,
+    refetch
+  };
+};
+
+export const useEducationalMaterial = (id?: number) => {
+  const [material, setMaterial] = useState<EducationalMaterial | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchMaterial = async (materialId: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getEducationalMaterialById(materialId);
+      setMaterial(response.data);
+      return response.data;
+    } catch (err: any) {
+      setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat mengambil data materi edukasi');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createMaterial = async (data: CreateEducationalMaterialRequest) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await createEducation(data);
+      return response.data;
+    } catch (err: any) {
+      setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat membuat materi edukasi');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateMaterial = async (materialId: number, data: UpdateEducationalMaterialRequest) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await updateEducation(materialId, data);
+      setMaterial(response.data);
+      return response.data;
+    } catch (err: any) {
+      setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat mengupdate materi edukasi');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteMaterial = async (materialId: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await deleteEducation(materialId);
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat menghapus materi edukasi');
       return false;
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (id) {
+      fetchMaterial(id);
+    }
+  }, [id]);
+
   return {
+    material,
     loading,
     error,
+    fetchMaterial,
     createMaterial,
     updateMaterial,
     deleteMaterial
