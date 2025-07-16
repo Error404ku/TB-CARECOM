@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../store/AuthContext';
+import { showProfileUpdateSuccess } from '../utils/sweetAlert';
 
 export default function ProfileAdmin() {
   const { user, logout } = useAuth();
@@ -28,7 +29,7 @@ export default function ProfileAdmin() {
   const handleSave = () => {
     setIsEditing(false);
     // Here you would typically save to backend
-    console.log('Admin profile updated:', profileData);
+    showProfileUpdateSuccess('admin');
   };
 
   const handleLogout = () => {

@@ -1,95 +1,192 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ModernLayout from '../layouts/ModernLayout';
+import { 
+  getAllDailyMonitoring, 
+  getPatientData, 
+  updatePatientData, 
+  updateDailyMonitoring,
+  type DailyMonitoringEntry,
+  type PatientData,
+  type UpdatePatientRequest,
+  type UpdateDailyMonitoringRequest
+} from '../api/pmoApi';
+import { showSuccess, showError, showConfirm } from '../utils/sweetAlert';
+import { useAuth } from '../store/AuthContext';
 
 const DashboardPMO: React.FC = () => {
+  const { authLoading } = useAuth();
   const [selectedTab, setSelectedTab] = useState('overview');
+  const [loading, setLoading] = useState(true);
+  const [patientData, setPatientData] = useState<PatientData | null>(null);
+  const [dailyMonitoring, setDailyMonitoring] = useState<DailyMonitoringEntry[]>([]);
+  
+  // Edit states
+  const [isEditingPatient, setIsEditingPatient] = useState(false);
+  const [editPatientData, setEditPatientData] = useState<UpdatePatientRequest>({
+    name: '',
+    address: '',
+    gender: '',
+    no_telp: '',
+    status: 'aktif'
+  });
+  
+  const [editingMonitoring, setEditingMonitoring] = useState<DailyMonitoringEntry | null>(null);
+  const [editMonitoringData, setEditMonitoringData] = useState<UpdateDailyMonitoringRequest>({
+    medication_time: '',
+    description: ''
+  });
 
-  const patientInfo = {
-    name: 'Ahmad Rizki',
-    age: 35,
-    phase: 'Intensif',
-    startDate: '15 Januari 2024',
-    endDate: '15 April 2024',
-    compliance: 95,
-    status: 'Aktif',
-    nextConsultation: '25 Maret 2024'
+
+  const loadDashboardData = async () => {
+    setLoading(true);
+    try {
+      const [patientResponse, monitoringResponse] = await Promise.all([
+        getPatientData(),
+        getAllDailyMonitoring()
+      ]);
+
+      if (patientResponse.data && patientResponse.data.data) {
+        setPatientData(patientResponse.data.data);
+        // Initialize edit form with current patient data
+        const patient = patientResponse.data.data;
+        setEditPatientData({
+          name: patient.name,
+          address: patient.address,
+          gender: patient.gender,
+          no_telp: patient.no_telp,
+          status: patient.status as 'aktif' | 'sembuh' | 'gagal'
+        });
+      } else if (patientResponse.data && (patientResponse.data.status === 404 || patientResponse.data.status === 401)) {
+        // API not available or unauthorized
+        console.warn('Patient API issue:', patientResponse.data.message);
+        // Don't show error popup, just log it
+      }
+
+      if (monitoringResponse.data && monitoringResponse.data.data) {
+        setDailyMonitoring(monitoringResponse.data.data);
+      } else if (monitoringResponse.data && (monitoringResponse.data.status === 404 || monitoringResponse.data.status === 401)) {
+        // API not available or unauthorized
+        console.warn('Monitoring API issue:', monitoringResponse.data.message);
+        // Don't show error popup, just log it
+      }
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      showError('Gagal Memuat Data', 'Terjadi kesalahan saat memuat data dashboard.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const medicationSchedule = [
-    { day: 'Senin', time: '08:00', taken: true, status: 'Selesai' },
-    { day: 'Selasa', time: '08:00', taken: true, status: 'Selesai' },
-    { day: 'Rabu', time: '08:00', taken: true, status: 'Selesai' },
-    { day: 'Kamis', time: '08:00', taken: false, status: 'Hari Ini' },
-    { day: 'Jumat', time: '08:00', taken: false, status: 'Belum' },
-    { day: 'Sabtu', time: '08:00', taken: false, status: 'Belum' },
-    { day: 'Minggu', time: '08:00', taken: false, status: 'Belum' }
-  ];
-
-  const recentReports = [
-    { id: 1, date: '20 Maret 2024', time: '08:30', condition: 'Sehat', sideEffects: 'Tidak ada' },
-    { id: 2, date: '19 Maret 2024', time: '08:15', condition: 'Batuk Ringan', sideEffects: 'Mual ringan' },
-    { id: 3, date: '18 Maret 2024', time: '08:45', condition: 'Sehat', sideEffects: 'Tidak ada' },
-    { id: 4, date: '17 Maret 2024', time: '08:20', condition: 'Sehat', sideEffects: 'Tidak ada' }
-  ];
-
-  const quickActions = [
-    {
-      title: 'Laporkan Minum Obat',
-      description: 'Konfirmasi konsumsi obat hari ini',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      color: 'from-green-500 to-green-600'
-    },
-    {
-      title: 'Riwayat Laporan',
-      description: 'Lihat laporan sebelumnya',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      color: 'from-blue-500 to-blue-600'
-    },
-    {
-      title: 'Edukasi TB',
-      description: 'Pelajari tentang TB',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
-      ),
-      color: 'from-purple-500 to-purple-600'
-    },
-    {
-      title: 'Hubungi Perawat',
-      description: 'Konsultasi dengan perawat',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-        </svg>
-      ),
-      color: 'from-orange-500 to-orange-600'
+  // Load data on component mount - but wait for auth to be ready
+  useEffect(() => {
+    if (!authLoading) {
+      loadDashboardData();
     }
-  ];
+  }, [authLoading]);
 
-  const stats = [
-    { label: 'Kepatuhan Minggu Ini', value: '95%', change: '+2%', color: 'from-green-500 to-green-600' },
-    { label: 'Hari Pengobatan', value: '65', change: '+1', color: 'from-blue-500 to-blue-600' },
-    { label: 'Laporan Terkirim', value: '65', change: '+1', color: 'from-purple-500 to-purple-600' },
-    { label: 'Sisa Pengobatan', value: '25', change: '-1', color: 'from-orange-500 to-orange-600' }
-  ];
+  const handleUpdatePatient = async () => {
+    try {
+      const result = await showConfirm(
+        'Update Data Pasien',
+        'Apakah Anda yakin ingin mengupdate data pasien?'
+      );
+
+      if (result.isConfirmed) {
+        const response = await updatePatientData(editPatientData);
+        if (response.data.status === 200) {
+          showSuccess('Berhasil!', 'Data pasien berhasil diperbarui.');
+          setIsEditingPatient(false);
+          loadDashboardData(); // Reload data
+        }
+      }
+    } catch (error) {
+      console.error('Error updating patient:', error);
+      showError('Gagal Update', 'Terjadi kesalahan saat mengupdate data pasien.');
+    }
+  };
+
+  const handleUpdateMonitoring = async () => {
+    try {
+      const result = await showConfirm(
+        'Update Data Monitoring',
+        'Apakah Anda yakin ingin mengupdate data monitoring ini?'
+      );
+
+      if (result.isConfirmed) {
+        const response = await updateDailyMonitoring(editMonitoringData);
+        if (response.data.status === 200) {
+          showSuccess('Berhasil!', 'Data monitoring berhasil diperbarui.');
+          setEditingMonitoring(null);
+          loadDashboardData(); // Reload data
+        }
+      }
+    } catch (error) {
+      console.error('Error updating monitoring:', error);
+      showError('Gagal Update', 'Terjadi kesalahan saat mengupdate data monitoring.');
+    }
+  };
+
+  const startEditingMonitoring = (monitoring: DailyMonitoringEntry) => {
+    setEditingMonitoring(monitoring);
+    setEditMonitoringData({
+      medication_time: monitoring.medication_time,
+      description: monitoring.description
+    });
+  };
+
+  const cancelEditingMonitoring = () => {
+    setEditingMonitoring(null);
+    setEditMonitoringData({
+      medication_time: '',
+      description: ''
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'aktif':
+        return 'bg-green-100 text-green-800';
+      case 'sembuh':
+        return 'bg-blue-100 text-blue-800';
+      case 'gagal':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (authLoading || loading) {
+    return (
+      <ModernLayout title="Dashboard PMO" subtitle="Memuat data...">
+        <div className="flex items-center justify-center min-h-96">
+          <div className="text-center">
+            <svg className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <p className="text-gray-600">
+              {authLoading ? 'Memverifikasi autentikasi...' : 'Memuat data dashboard...'}
+            </p>
+          </div>
+        </div>
+      </ModernLayout>
+    );
+  }
 
   return (
-    <ModernLayout title="Dashboard PMO" subtitle="Awasi pengobatan TB pasien Anda">
+    <ModernLayout title="Dashboard PMO" subtitle="Kelola pengobatan TB pasien Anda">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-3xl p-8 text-white mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Selamat Datang, Ibu Siti!</h1>
-            <p className="text-blue-100">Awasi pengobatan TB untuk Ahmad Rizki</p>
+            <h1 className="text-3xl font-bold mb-2">
+              Selamat Datang, {patientData?.pmo.name || 'PMO'}!
+            </h1>
+            <p className="text-blue-100">
+              {patientData 
+                ? `Kelola pengobatan TB untuk ${patientData.name}`
+                : 'Dashboard PMO untuk mengelola pengobatan TB pasien'
+              }
+            </p>
           </div>
           <div className="hidden md:block">
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -101,194 +198,422 @@ const DashboardPMO: React.FC = () => {
         </div>
       </div>
 
-      {/* Patient Info Card */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-gray-200/50 mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">
-                {patientInfo.name.split(' ').map(n => n[0]).join('')}
-              </span>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">{patientInfo.name}</h2>
-              <p className="text-gray-600">{patientInfo.age} tahun • {patientInfo.phase}</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
-              patientInfo.status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-            }`}>
-              {patientInfo.status}
-            </span>
-          </div>
-        </div>
-        
-        <div className="grid md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">Kepatuhan</p>
-            <p className="text-2xl font-bold text-green-600">{patientInfo.compliance}%</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">Mulai Pengobatan</p>
-            <p className="text-sm font-semibold text-gray-800">{patientInfo.startDate}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">Selesai Pengobatan</p>
-            <p className="text-sm font-semibold text-gray-800">{patientInfo.endDate}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">Konsultasi Berikutnya</p>
-            <p className="text-sm font-semibold text-gray-800">{patientInfo.nextConsultation}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
-            <div className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center mb-4`}>
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-1">{stat.value}</h3>
-            <p className="text-gray-600 text-sm mb-2">{stat.label}</p>
-            <span className={`text-sm font-medium ${
-              stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-            }`}>{stat.change}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Quick Actions */}
+      {/* Navigation Tabs */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Aksi Cepat</h2>
-        <div className="grid md:grid-cols-4 gap-6">
-          {quickActions.map((action, index) => (
+        <div className="flex space-x-1 bg-white/80 backdrop-blur-sm rounded-2xl p-1 shadow-lg border border-gray-200/50">
+          {[
+            { id: 'overview', label: 'Overview', icon: '📊' },
+            { id: 'patient', label: 'Data Pasien', icon: '👤' },
+            { id: 'monitoring', label: 'Daily Monitoring', icon: '📋' }
+          ].map((tab) => (
             <button
-              key={index}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 text-left"
+              key={tab.id}
+              onClick={() => setSelectedTab(tab.id)}
+              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+                selectedTab === tab.id
+                  ? 'bg-gradient-to-r from-blue-600 to-green-600 text-white shadow-lg'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
-              <div className={`w-12 h-12 bg-gradient-to-r ${action.color} rounded-xl flex items-center justify-center mb-4`}>
-                {action.icon}
-              </div>
-              <h3 className="font-semibold text-gray-800 mb-2">{action.title}</h3>
-              <p className="text-sm text-gray-600">{action.description}</p>
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Medication Schedule */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-gray-200/50">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">Jadwal Minum Obat Minggu Ini</h2>
-            <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-              Lihat Semua
-            </button>
-          </div>
-          <div className="space-y-3">
-            {medicationSchedule.map((schedule, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-200">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    schedule.taken ? 'bg-green-500' : 
-                    schedule.status === 'Hari Ini' ? 'bg-yellow-500' : 'bg-gray-300'
-                  }`}>
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Overview Tab */}
+      {selectedTab === 'overview' && (
+        <div className="space-y-8">
+          {!patientData ? (
+            /* No Data State */
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 text-center">
+              <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-5v2a1 1 0 01-1 1h-1m-1 0H9m4 0V8a1 1 0 011-1h1m0 0V6h1m0 0h1" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-600 mb-2">Data Tidak Tersedia</h3>
+              <p className="text-gray-500">
+                API backend belum tersedia. Silakan hubungi administrator untuk mengaktifkan layanan.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-1">{patientData.name}</h3>
+                  <p className="text-gray-600 text-sm mb-2">Nama Pasien</p>
+                  <span className={`text-sm font-medium px-2 py-1 rounded ${getStatusColor(patientData.status)}`}>
+                    {patientData.status}
+                  </span>
+                </div>
+
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{schedule.day}</h3>
-                    <p className="text-sm text-gray-600">{schedule.time}</p>
-                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-1">{dailyMonitoring.length}</h3>
+                  <p className="text-gray-600 text-sm mb-2">Total Monitoring</p>
+                  <span className="text-sm font-medium text-green-600">Laporan</span>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                  schedule.status === 'Selesai' ? 'bg-green-100 text-green-800' :
-                  schedule.status === 'Hari Ini' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-gray-100 text-gray-800'
-                }`}>
-                  {schedule.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Recent Reports */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-gray-200/50">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">Laporan Terbaru</h2>
-            <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-              Lihat Semua
-            </button>
-          </div>
-          <div className="space-y-4">
-            {recentReports.map((report) => (
-              <div key={report.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-200">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{report.date}</h3>
-                    <p className="text-sm text-gray-600">{report.time} • {report.condition}</p>
-                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-1">{patientData.pmo.name}</h3>
+                  <p className="text-gray-600 text-sm mb-2">PMO</p>
+                  <span className="text-sm font-medium text-purple-600">{patientData.pmo.relationship}</span>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs text-gray-500">Efek Samping:</span>
-                  <p className="text-sm font-medium text-gray-800">{report.sideEffects}</p>
+
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m-2 0H7m5 0H9" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-1">{patientData.assignedNurse.name}</h3>
+                  <p className="text-gray-600 text-sm mb-2">Perawat</p>
+                  <span className="text-sm font-medium text-orange-600">{patientData.assignedNurse.rs}</span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
+            </>
+          )}
 
-      {/* Progress Overview */}
-      <div className="mt-8 bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-gray-200/50">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Progress Pengobatan</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          {/* Recent Monitoring */}
+          {patientData && (
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Monitoring Terbaru</h2>
+              {dailyMonitoring.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">Belum Ada Data Monitoring</h3>
+                  <p className="text-gray-500">
+                    Data monitoring harian belum tersedia atau API belum aktif.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {dailyMonitoring.slice(0, 5).map((monitoring) => (
+                    <div key={monitoring.id} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-semibold text-gray-800">
+                            {new Date(monitoring.medication_time).toLocaleDateString('id-ID', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                        <p className="text-gray-600">{monitoring.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Patient Tab */}
+      {selectedTab === 'patient' && (
+        !patientData ? (
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 text-center">
+            <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Hari Ke-65</h3>
-            <p className="text-3xl font-bold text-blue-600 mb-1">72%</p>
-            <p className="text-sm text-gray-600">dari total 90 hari</p>
+            <h3 className="text-xl font-bold text-gray-600 mb-2">Data Pasien Tidak Tersedia</h3>
+            <p className="text-gray-500">
+              API data pasien belum tersedia. Silakan hubungi administrator untuk mengaktifkan layanan.
+            </p>
           </div>
-          
-          <div className="text-center">
-            <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+        ) : (
+        <div className="space-y-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Data Pasien</h2>
+              <button
+                onClick={() => setIsEditingPatient(!isEditingPatient)}
+                className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+                  isEditingPatient
+                    ? 'bg-gray-500 text-white hover:bg-gray-600'
+                    : 'bg-gradient-to-r from-blue-600 to-green-600 text-white hover:shadow-lg'
+                }`}
+              >
+                {isEditingPatient ? 'Batal' : 'Edit Data'}
+              </button>
             </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Kepatuhan</h3>
-            <p className="text-3xl font-bold text-green-600 mb-1">95%</p>
-            <p className="text-sm text-gray-600">rata-rata</p>
+
+            {isEditingPatient ? (
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
+                    <input
+                      type="text"
+                      value={editPatientData.name}
+                      onChange={(e) => setEditPatientData({...editPatientData, name: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Alamat</label>
+                    <textarea
+                      value={editPatientData.address}
+                      onChange={(e) => setEditPatientData({...editPatientData, address: e.target.value})}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Kelamin</label>
+                    <select
+                      value={editPatientData.gender}
+                      onChange={(e) => setEditPatientData({...editPatientData, gender: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="Laki-laki">Laki-laki</option>
+                      <option value="Perempuan">Perempuan</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon</label>
+                    <input
+                      type="text"
+                      value={editPatientData.no_telp}
+                      onChange={(e) => setEditPatientData({...editPatientData, no_telp: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Status Pengobatan</label>
+                    <select
+                      value={editPatientData.status}
+                      onChange={(e) => setEditPatientData({...editPatientData, status: e.target.value as 'aktif' | 'sembuh' | 'gagal'})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="aktif">Aktif</option>
+                      <option value="sembuh">Sembuh</option>
+                      <option value="gagal">Gagal</option>
+                    </select>
+                  </div>
+                  <div className="pt-4">
+                    <button
+                      onClick={handleUpdatePatient}
+                      className="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                    >
+                      Simpan Perubahan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <p className="text-gray-800 font-medium">{patientData.name}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Alamat</label>
+                    <p className="text-gray-800">{patientData.address}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
+                    <p className="text-gray-800">{patientData.gender}</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Nomor Telepon</label>
+                    <p className="text-gray-800">{patientData.no_telp}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Status Pengobatan</label>
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(patientData.status)}`}>
+                      {patientData.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          
-          <div className="text-center">
-            <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+
+          {/* PMO and Nurse Info */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-gray-200/50">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Informasi PMO</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nama PMO</label>
+                  <p className="text-gray-800">{patientData.pmo.name}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Hubungan</label>
+                  <p className="text-gray-800">{patientData.pmo.relationship}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nomor Telepon</label>
+                  <p className="text-gray-800">{patientData.pmo.no_telp}</p>
+                </div>
+              </div>
             </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Sisa Hari</h3>
-            <p className="text-3xl font-bold text-purple-600 mb-1">25</p>
-            <p className="text-sm text-gray-600">hari lagi</p>
+
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-gray-200/50">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Perawat yang Ditugaskan</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nama Perawat</label>
+                  <p className="text-gray-800">{patientData.assignedNurse.name}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <p className="text-gray-800">{patientData.assignedNurse.email}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Rumah Sakit</label>
+                  <p className="text-gray-800">{patientData.assignedNurse.rs}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+        )
+      )}
+
+      {/* Daily Monitoring Tab */}
+      {selectedTab === 'monitoring' && (
+        <div className="space-y-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Riwayat Daily Monitoring</h2>
+            {dailyMonitoring.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-600 mb-2">Belum Ada Data Monitoring</h3>
+                <p className="text-gray-500">
+                  Data monitoring harian belum tersedia atau API belum aktif. Silakan hubungi administrator.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {dailyMonitoring.map((monitoring) => (
+                <div key={monitoring.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200">
+                  {editingMonitoring?.id === monitoring.id ? (
+                    <div className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Waktu Minum Obat</label>
+                          <input
+                            type="datetime-local"
+                            value={editMonitoringData.medication_time.replace(' ', 'T').slice(0, 16)}
+                            onChange={(e) => setEditMonitoringData({
+                              ...editMonitoringData,
+                              medication_time: e.target.value.replace('T', ' ') + ':00'
+                            })}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                          <textarea
+                            value={editMonitoringData.description}
+                            onChange={(e) => setEditMonitoringData({
+                              ...editMonitoringData,
+                              description: e.target.value
+                            })}
+                            rows={3}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex space-x-4">
+                        <button
+                          onClick={handleUpdateMonitoring}
+                          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+                        >
+                          Simpan
+                        </button>
+                        <button
+                          onClick={cancelEditingMonitoring}
+                          className="px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-4 mb-3">
+                          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800">
+                              {new Date(monitoring.medication_time).toLocaleDateString('id-ID', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </h3>
+                            <p className="text-sm text-gray-600">Pasien: {monitoring.patient.name}</p>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 leading-relaxed">{monitoring.description}</p>
+                      </div>
+                      <button
+                        onClick={() => startEditingMonitoring(monitoring)}
+                        className="ml-4 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </ModernLayout>
   );
 };
