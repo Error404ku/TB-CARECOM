@@ -5,10 +5,16 @@ import { login as loginApi } from '../api/authApi';
 import { jwtDecode } from 'jwt-decode';
 import { showError } from '../utils/sweetAlert';
 import { useAuth } from '../store/AuthContext';
+import { useEffect } from 'react';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  // kalo ada dihalaman login maka token dan role dihapus
+  useEffect(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+  }, []);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -57,42 +63,11 @@ const Login: React.FC = () => {
     });
   };
 
-  const handleQuickLogin = (role: string) => {
-    // Simulate quick login for testing
-    console.log(`Quick login as ${role}`);
-    
-    // Create mock token and user data for testing
-    const mockToken = 'mock-jwt-token-for-testing';
-    localStorage.setItem('token', mockToken);
-    localStorage.setItem('role', role);
-    
-    // Update AuthContext with mock user data
-    login({
-      role: role as 'admin' | 'user' | 'pmo' | 'perawat',
-      name: `Test ${role.charAt(0).toUpperCase() + role.slice(1)}`,
-      email: `test-${role}@example.com`,
-      id: Math.floor(Math.random() * 1000)
-    });
-    
-    // Navigate based on role
-    if (role === 'superadmin') {
-      navigate('/superadmin');
-    } else if (role === 'admin') {
-      navigate('/admin/dashboard');
-    } else if (role === 'perawat') {
-      navigate('/perawat/dashboard');
-    } else if (role === 'pmo') {
-      navigate('/dashboardpmo');
-    } else {
-      // navigate('/dashboarduser');
-    }
-  };
-
   return (
     <ModernLayout title="Masuk ke TB CareCom" subtitle="Akses dashboard Anda untuk mengelola pengobatan TB">
       <div className="mx-auto">
         {/* Quick Login Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 mb-8">
+        {/* <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 mb-8">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Quick Login</h2>
             <p className="text-gray-600">Login cepat untuk testing</p>
@@ -138,7 +113,7 @@ const Login: React.FC = () => {
               <p className="text-xs opacity-90">PMO</p>
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* Regular Login Form */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50">
@@ -221,7 +196,7 @@ const Login: React.FC = () => {
         </div>
 
         {/* Additional Info */}
-        <div className="mt-8 bg-gradient-to-r from-blue-50 to-green-50 rounded-3xl p-6 border border-blue-200/50">
+        {/* <div className="mt-8 bg-gradient-to-r from-blue-50 to-green-50 rounded-3xl p-6 border border-blue-200/50">
           <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Informasi Login</h3>
           <div className="space-y-3 text-sm text-gray-600">
             <div className="flex items-center space-x-3">
@@ -241,7 +216,7 @@ const Login: React.FC = () => {
               <span><strong>Quick Login:</strong> Untuk testing dan demo aplikasi</span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </ModernLayout>
   );

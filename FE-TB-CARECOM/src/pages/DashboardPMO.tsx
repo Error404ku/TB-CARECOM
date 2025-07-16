@@ -5,6 +5,7 @@ import {
   getPatientData, 
   updatePatientData, 
   updateDailyMonitoring,
+  getPatientQRCode,
   type DailyMonitoringEntry,
   type PatientData,
   type UpdatePatientRequest,
@@ -12,6 +13,7 @@ import {
 } from '../api/pmoApi';
 import { showSuccess, showError, showConfirm } from '../utils/sweetAlert';
 import { useAuth } from '../store/AuthContext';
+import * as QRCode from 'qrcode';
 
 const DashboardPMO: React.FC = () => {
   const { authLoading } = useAuth();
@@ -140,6 +142,51 @@ const DashboardPMO: React.FC = () => {
       medication_time: '',
       description: ''
     });
+  };
+
+  const handleDownloadQRCode = async () => {
+    try {
+      // Get QR code data from API
+      const response = await getPatientQRCode();
+      
+      if (response.data.meta.code === 200 && response.data.data) {
+        // Get QR code URL from environment variable
+        const qrCodeBaseUrl = import.meta.env.VITE_QRCODE_URL;
+        
+        if (!qrCodeBaseUrl) {
+          showError('Konfigurasi Error', 'VITE_QRCODE_URL belum dikonfigurasi di environment variables.');
+          return;
+        }
+        
+        // Combine base URL with the UUID from API response
+        const qrCodeUrl = `${qrCodeBaseUrl}${response.data.data}`;
+        
+        // Generate QR code as data URL
+        const qrDataUrl = await QRCode.toDataURL(qrCodeUrl, {
+          width: 512,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        });
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.href = qrDataUrl;
+        link.download = `qr-code-${patientData?.name || 'patient'}-${new Date().getTime()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showSuccess('Berhasil!', 'QR Code berhasil didownload.');
+      } else {
+        showError('Gagal Download', response.data.meta.message || 'Tidak dapat mengambil data QR code.');
+      }
+    } catch (error) {
+      console.error('Error downloading QR code:', error);
+      showError('Gagal Download', 'Terjadi kesalahan saat mendownload QR code.');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -359,16 +406,27 @@ const DashboardPMO: React.FC = () => {
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Data Pasien</h2>
-              <button
-                onClick={() => setIsEditingPatient(!isEditingPatient)}
-                className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
-                  isEditingPatient
-                    ? 'bg-gray-500 text-white hover:bg-gray-600'
-                    : 'bg-gradient-to-r from-blue-600 to-green-600 text-white hover:shadow-lg'
-                }`}
-              >
-                {isEditingPatient ? 'Batal' : 'Edit Data'}
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleDownloadQRCode}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm0 13h5a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1v-5a1 1 0 011-1zm13-13h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                  </svg>
+                  <span>Download QR</span>
+                </button>
+                <button
+                  onClick={() => setIsEditingPatient(!isEditingPatient)}
+                  className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+                    isEditingPatient
+                      ? 'bg-gray-500 text-white hover:bg-gray-600'
+                      : 'bg-gradient-to-r from-blue-600 to-green-600 text-white hover:shadow-lg'
+                  }`}
+                >
+                  {isEditingPatient ? 'Batal' : 'Edit Data'}
+                </button>
+              </div>
             </div>
 
             {isEditingPatient ? (

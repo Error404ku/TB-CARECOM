@@ -58,8 +58,7 @@ export type {
   EducationalMaterial,
   CreateEducationalMaterialRequest,
   UpdateEducationalMaterialRequest,
-  MaterialCategory,
-  FileUploadResponse
+  MaterialCategory
 } from '../features/education/types';
 
 export type {

@@ -1,6 +1,6 @@
 // features/perawat/pages/PatientDetail.tsx
-import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { usePatient, useRestartTreatment } from '../hooks';
 import { perawatUtils } from '../services';
 import ModernLayout from '../../../layouts/ModernLayout';
@@ -8,7 +8,7 @@ import Swal from 'sweetalert2';
 
 const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+
   const patientId = parseInt(id || '0');
   
   const { patient, loading, error, refetch } = usePatient(patientId);

@@ -58,6 +58,14 @@ export interface UpdatePatientRequest {
   status: 'aktif' | 'sembuh' | 'gagal';
 }
 
+export interface QRCodeResponse {
+  meta: {
+    code: number;
+    message: string;
+  };
+  data: string;
+}
+
 /**
  * Get all daily monitoring data for PMO
  */
@@ -166,4 +174,30 @@ export const getDailyMonitoringById = (id: number) => {
  */
 export const deleteDailyMonitoring = (id: number) => {
   return privateClient.delete(`/pmo/daily-monitoring/${id}`);
+};
+
+/**
+ * Get QR code data for patient
+ */
+export const getPatientQRCode = async () => {
+  try {
+    return await privateClient.get<QRCodeResponse>('/pmo/patient/qr-code');
+  } catch (error: any) {
+    // If API endpoint doesn't exist (404) or unauthorized (401), return error message
+    if (error.response?.status === 404 || error.response?.status === 401) {
+      console.warn('PMO QR code API belum tersedia atau tidak diotorisasi');
+      return {
+        data: {
+          meta: {
+            code: error.response.status,
+            message: error.response.status === 404
+              ? "API QR code belum tersedia. Silakan hubungi administrator."
+              : "API QR code belum tersedia atau akses tidak diotorisasi."
+          },
+          data: null
+        }
+      };
+    }
+    throw error;
+  }
 }; 

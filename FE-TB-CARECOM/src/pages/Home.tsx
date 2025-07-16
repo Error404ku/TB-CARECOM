@@ -138,16 +138,6 @@ const Home: React.FC = () => {
                 <span>Kirim laporan untuk monitoring harian</span>
               </div>
             </div>
-            
-            {/* Demo QR Codes */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-              <h4 className="text-sm font-semibold text-blue-800 mb-2">Demo QR Codes untuk Testing:</h4>
-              <div className="space-y-2 text-xs">
-                <div className="font-mono text-blue-700">a81bc81b-dead-4e5d-abff-90865d1e13b1</div>
-                <div className="font-mono text-blue-700">b92cd92c-beef-5f6e-bcaa-91976e2f24c2</div>
-                <div className="font-mono text-blue-700">c03de03d-cafe-6a7f-cd55-a2087f3b35d3</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

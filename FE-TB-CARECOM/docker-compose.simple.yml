@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: tb-carecom-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - tb-carecom-network
+
+networks:
+  tb-carecom-network:
+    driver: bridge 

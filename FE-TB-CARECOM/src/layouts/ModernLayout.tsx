@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../store/AuthContext';
 
 interface ModernLayoutProps {
   children: React.ReactNode;
@@ -9,6 +10,12 @@ interface ModernLayoutProps {
 
 const ModernLayout: React.FC<ModernLayoutProps> = ({ children, title, subtitle }) => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       {/* Header */}
@@ -31,9 +38,23 @@ const ModernLayout: React.FC<ModernLayoutProps> = ({ children, title, subtitle }
             <nav className="hidden md:flex items-center space-x-6">
               <a href="/" className="text-gray-600 hover:text-blue-600 transition-colors">Beranda</a>
               <a href="/edukasi" className="text-gray-600 hover:text-blue-600 transition-colors">Edukasi</a>
-              <a href="/login" className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200">
-                Masuk
-              </a>
+              {user ? (
+                <div className="flex items-center space-x-3">
+                  {/* <span className="text-gray-700 font-medium">
+                    Halo, {user.name}
+                  </span> */}
+                  <button 
+                    onClick={handleLogout}
+                    className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <a href="/login" className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200">
+                  Masuk
+                </a>
+              )}
             </nav>
           </div>
         </div>
