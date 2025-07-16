@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     npm \
     nginx \
     supervisor \
+    netcat-openbsd \
     && docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd
 
 # Get latest Composer
