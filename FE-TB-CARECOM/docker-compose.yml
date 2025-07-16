@@ -9,7 +9,7 @@ services:
       target: production
     container_name: tb-carecom-frontend
     ports:
-      - "3000:80"
+      - "5173:80"
     environment:
       # Production environment variables
       - NODE_ENV=production

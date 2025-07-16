@@ -49,8 +49,8 @@ Contoh: Jika `VITE_QRCODE_URL` adalah `https://example.com/scan/` dan API mengem
    ```
 
 3. **Access the Application**
-   - Frontend: http://localhost:3000
-   - Health Check: http://localhost:3000/health
+   - Frontend: http://localhost:5173
+   - Health Check: http://localhost:5173/health
 
 ### 🔧 Development with Docker
 
@@ -106,7 +106,7 @@ deploy.bat stop
 docker build -t tb-carecom-frontend .
 
 # Run production container
-docker run -d -p 3000:80 --name tb-carecom-frontend tb-carecom-frontend
+docker run -d -p 5173:80 --name tb-carecom-frontend tb-carecom-frontend
 
 # Build development image
 docker build -f Dockerfile.dev -t tb-carecom-frontend:dev .

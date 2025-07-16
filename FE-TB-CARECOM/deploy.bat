@@ -60,8 +60,8 @@ docker-compose down --remove-orphans
 docker-compose up -d --build
 
 echo %SUCCESS% Production deployment completed!
-echo %INFO% Frontend URL: http://localhost:3000
-echo %INFO% Health Check: http://localhost:3000/health
+echo %INFO% Frontend URL: http://localhost:5173
+echo %INFO% Health Check: http://localhost:5173/health
 echo %INFO% View logs: deploy.bat logs
 goto end
 

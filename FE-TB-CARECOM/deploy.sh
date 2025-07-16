@@ -64,8 +64,8 @@ deploy_production() {
     docker-compose up -d --build
     
     print_success "✅ Production deployment completed!"
-    print_status "Frontend URL: http://localhost:3000"
-    print_status "Health Check: http://localhost:3000/health"
+    print_status "Frontend URL: http://localhost:5173"
+    print_status "Health Check: http://localhost:5173/health"
     print_status "View logs: ./deploy.sh logs"
 }
 
