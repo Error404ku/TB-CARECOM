@@ -14,17 +14,19 @@ services:
       # Production environment variables
       - NODE_ENV=production
     restart: unless-stopped
-    volumes:
-      # Mount nginx logs for debugging
-      - ./logs/nginx:/var/log/nginx
+# Temporarily disabled volume mounts to fix ContainerConfig error
+    # volumes:
+    #   # Mount nginx logs for debugging
+    #   - ./logs/nginx:/var/log/nginx
     networks:
       - tb-carecom-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+# Temporarily disabled healthcheck to fix ContainerConfig error
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost/health"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
 
   # Backend service (placeholder - uncomment and configure when ready)
   # backend:
