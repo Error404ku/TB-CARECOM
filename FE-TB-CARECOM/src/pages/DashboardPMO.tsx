@@ -18,7 +18,7 @@ import * as QRCode from 'qrcode';
 const DashboardPMO: React.FC = () => {
   const { authLoading } = useAuth();
   const [selectedTab, setSelectedTab] = useState('overview');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [dailyMonitoring, setDailyMonitoring] = useState<DailyMonitoringEntry[]>([]);
   
