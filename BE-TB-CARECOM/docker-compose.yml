@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: tb-carecom-app
+        restart: unless-stopped
+        ports:
+            - "8082:80"
+        environment:
+            - APP_NAME=TB-CARECOM
+            - APP_ENV=production
+            - APP_DEBUG=false
+            - APP_URL=http://localhost:8082
+            - DB_CONNECTION=pgsql
+            - DB_HOST=aws-0-ap-southeast-1.pooler.supabase.com
+            - DB_PORT=6543
+            - DB_DATABASE=postgres
+            - DB_USERNAME=postgres.xduwjlxthomxiempuhoh
+            - DB_PASSWORD=terbang
+            - JWT_SECRET=your_jwt_secret_here_change_this
+            - SESSION_DRIVER=database
+            - CACHE_STORE=database
+            - QUEUE_CONNECTION=database
+        # Using external Supabase database - no local db dependency
+        networks:
+            - tb-carecom-network
+        volumes:
+            - ./storage:/var/www/html/storage
+
+    # Database service removed - using external Supabase database
+
+# volumes:
+  # postgres_data: # Removed - using external database
+
+networks:
+    tb-carecom-network:
+        driver: bridge
