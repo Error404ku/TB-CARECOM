@@ -15,7 +15,7 @@ services:
     networks:
       - tb-carecom-network
 
-    nginx:
+  nginx:
     image: nginx:latest
     container_name: tb-carecom-nginx
     depends_on:
