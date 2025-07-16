@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ModernLayout from '../layouts/ModernLayout';
 
 const SuperAdmin: React.FC = () => {
-  const [selectedTab, setSelectedTab] = useState('overview');
+
 
   const stats = [
     { label: 'Total Perawat', value: '24', change: '+3', color: 'from-purple-500 to-purple-600' },

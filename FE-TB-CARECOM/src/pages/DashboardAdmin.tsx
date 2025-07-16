@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ModernLayout from '../layouts/ModernLayout';
 
 const DashboardAdmin: React.FC = () => {
-  const [selectedTab, setSelectedTab] = useState('overview');
+
 
   const stats = [
     { label: 'Total Pasien', value: '8', change: '+1', color: 'from-blue-500 to-blue-600' },

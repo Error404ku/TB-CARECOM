@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ModernLayout from '../layouts/ModernLayout';
 import { useEducationalMaterials, useEducationPagination } from '../features/education/hooks';
 import type { EducationalMaterial } from '../features/education/types';
@@ -82,7 +82,7 @@ const Edukasi: React.FC = () => {
 
   return (
     <ModernLayout title="Edukasi TB" subtitle="Materi edukasi tentang Tuberculosis dan pengobatannya">
-      {loading && <LoadingOverlay />}
+      {loading && <LoadingOverlay show={loading} />}
       
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-3xl p-8 text-white mb-8">

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ModernLayout from '../layouts/ModernLayout';
 
 const DashboardUser: React.FC = () => {
-  const [selectedTab, setSelectedTab] = useState('overview');
+
 
   const stats = [
     { label: 'Hari Pengobatan', value: '45/180', change: '+1 hari', color: 'from-blue-500 to-blue-600' },

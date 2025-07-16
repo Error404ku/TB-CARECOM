@@ -12,47 +12,7 @@ const PerawatDashboard: React.FC = () => {
   const malePatients = patients.filter(p => p.gender === 'L').length;
   const femalePatients = patients.filter(p => p.gender === 'P').length;
 
-  const StatCard = ({ title, value, color, icon }: {
-    title: string;
-    value: number | string;
-    color: string;
-    icon: string;
-  }) => (
-    <div className={`${color} rounded-lg p-6 text-white shadow-lg`}>
-      <div className="flex items-center">
-        <div className="p-3 rounded-full bg-white bg-opacity-20">
-          <span className="text-2xl">{icon}</span>
-        </div>
-        <div className="ml-4">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <p className="text-3xl font-bold">{loading ? '...' : value}</p>
-        </div>
-      </div>
-    </div>
-  );
 
-  const QuickActionCard = ({ title, description, to, color, icon }: {
-    title: string;
-    description: string;
-    to: string;
-    color: string;
-    icon: string;
-  }) => (
-    <Link
-      to={to}
-      className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200"
-    >
-      <div className="flex items-start">
-        <div className={`p-3 rounded-lg ${color}`}>
-          <span className="text-xl text-white">{icon}</span>
-        </div>
-        <div className="ml-4">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <p className="text-gray-600 mt-1">{description}</p>
-        </div>
-      </div>
-    </Link>
-  );
 
   return (
     <ModernLayout title="Dashboard Perawat" subtitle="Kelola dan pantau pasien TB yang ditugaskan kepada Anda">

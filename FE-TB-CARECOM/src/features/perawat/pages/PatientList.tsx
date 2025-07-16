@@ -1,5 +1,5 @@
 // features/perawat/pages/PatientList.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usePatients } from '../hooks';
 import { perawatUtils } from '../services';

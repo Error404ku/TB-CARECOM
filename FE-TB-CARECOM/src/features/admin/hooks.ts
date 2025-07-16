@@ -11,9 +11,7 @@ import {
   createPMO,
   updatePMO,
   deletePMO,
-  createEducationalMaterial,
-  updateEducationalMaterial,
-  deleteEducationalMaterial,
+
   getAllDailyMonitoringAdmin,
   getDailyMonitoringByIdAdmin,
   getDailyMonitoringByPatientIdAdmin,
@@ -38,7 +36,6 @@ import {
 
 import type {
   EducationalMaterial,
-  EducationalMaterialResponse,
   EducationalMaterialFilters,
   CreateEducationalMaterialRequest,
   UpdateEducationalMaterialRequest

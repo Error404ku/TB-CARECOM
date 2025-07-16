@@ -7,7 +7,6 @@ import {
 import type { 
   EducationalMaterial, 
   EducationalMaterialResponse, 
-  EducationalMaterialDetailResponse,
   EducationalMaterialFilters 
 } from './types';
 
