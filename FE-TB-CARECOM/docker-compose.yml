@@ -7,29 +7,13 @@ services:
       dockerfile: Dockerfile
       target: production
     container_name: tb-carecom-frontend
-    expose:
-      - "5173"  # expose internal, tidak publish keluar
+    ports:
+      - "5173:5173"  # expose ke host agar Nginx sistem bisa akses
     environment:
       - NODE_ENV=production
     restart: unless-stopped
     networks:
       - tb-carecom-network
-
-  nginx:
-    image: nginx:latest
-    container_name: tb-carecom-nginx
-    depends_on:
-      - frontend
-    ports:
-      - "8880:80"     # HTTP fallback (jarang dipakai, aman)
-      - "8443:443"    # HTTPS, didukung Cloudflare
-    volumes:
-      - ./nginx.simple.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    networks:
-      - tb-carecom-network
-
-
 
 networks:
   tb-carecom-network:
