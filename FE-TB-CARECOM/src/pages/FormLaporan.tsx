@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ModernLayout from '../layouts/ModernLayout';
+import { showReportSuccess } from '../utils/sweetAlert';
 
 const FormLaporan: React.FC = () => {
   const { barcodeId } = useParams();
@@ -63,8 +64,8 @@ const FormLaporan: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     setIsSubmitting(false);
-    // Handle success - could redirect or show success message
-    console.log('Report submitted:', formData);
+    // Handle success - show success message
+    showReportSuccess();
   };
 
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 3));

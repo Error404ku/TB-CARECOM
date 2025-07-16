@@ -3,9 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import ModernLayout from '../layouts/ModernLayout';
 import { login as loginApi } from '../api/authApi';
 import { jwtDecode } from 'jwt-decode';
+import { showError } from '../utils/sweetAlert';
+import { useAuth } from '../store/AuthContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -20,16 +23,30 @@ const Login: React.FC = () => {
       // Save token (and user info if needed)
       localStorage.setItem('token', token);
       localStorage.setItem('role', decoded.role);
+      
+      // Update AuthContext with user data
+      login({
+        role: decoded.role,
+        name: decoded.name || 'User',
+        email: decoded.email,
+        id: decoded.id
+      });
+      
       // Redirect based on role
-      if (decoded.role === 'superadmin') {
-        navigate('/superadmin');
-      } else if (decoded.role === 'admin') {
-        navigate('/dashboardadmin');
+      if (decoded.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (decoded.role === 'perawat') {
+        navigate('/perawat/dashboard');
       } else if (decoded.role === 'pmo') {
         navigate('/dashboardpmo');
+      } else {
+        // navigate('/dashboarduser');
       }
     } catch (error: any) {
-      alert(error?.response?.data?.meta?.message || 'Login gagal');
+      showError(
+        'Login Gagal',
+        error?.response?.data?.meta?.message || 'Email atau password salah'
+      );
     }
   };
 
@@ -43,16 +60,31 @@ const Login: React.FC = () => {
   const handleQuickLogin = (role: string) => {
     // Simulate quick login for testing
     console.log(`Quick login as ${role}`);
-    // Here you would typically set auth context and redirect
+    
+    // Create mock token and user data for testing
+    const mockToken = 'mock-jwt-token-for-testing';
+    localStorage.setItem('token', mockToken);
+    localStorage.setItem('role', role);
+    
+    // Update AuthContext with mock user data
+    login({
+      role: role as 'admin' | 'user' | 'pmo' | 'perawat',
+      name: `Test ${role.charAt(0).toUpperCase() + role.slice(1)}`,
+      email: `test-${role}@example.com`,
+      id: Math.floor(Math.random() * 1000)
+    });
+    
+    // Navigate based on role
     if (role === 'superadmin') {
-      // Navigate to super admin dashboard
       navigate('/superadmin');
     } else if (role === 'admin') {
-      // Navigate to nurse dashboard
-      navigate('/dashboardadmin');
+      navigate('/admin/dashboard');
+    } else if (role === 'perawat') {
+      navigate('/perawat/dashboard');
     } else if (role === 'pmo') {
-      // Navigate to family dashboard
       navigate('/dashboardpmo');
+    } else {
+      // navigate('/dashboarduser');
     }
   };
 

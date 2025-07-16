@@ -5,5 +5,7 @@ import type { ReactNode } from 'react';
 
 export const PrivateRoute = ({ children }: { children: ReactNode  }) => {
   const { user } = useAuth();
-  return user ? children : <Navigate to="/login" />;
+  // jangan direct kemana mana
+  // if (!user) return <Navigate to="/login" />;
+  return children;
 };

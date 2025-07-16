@@ -1,10 +1,31 @@
 // api/userApi.ts
-import client from './client';
+import { privateClient } from './client';
 
-export const fetchUserProfile = () => {
-  return client.get('/user/profile');
+// All user APIs require authentication
+export const getUserData = () => {
+  return privateClient.get('/user/profile');
 };
 
-export const updateUserProfile = (data: any) => {
-  return client.put('/user/profile', data);
+export const updateUserData = (data: any) => {
+  return privateClient.put('/user/profile', data);
+};
+
+export const getUserDashboard = () => {
+  return privateClient.get('/user/dashboard');
+};
+
+export const getUserReports = () => {
+  return privateClient.get('/user/reports');
+};
+
+export const createUserReport = (data: any) => {
+  return privateClient.post('/user/reports', data);
+};
+
+export const updateUserReport = (id: number, data: any) => {
+  return privateClient.put(`/user/reports/${id}`, data);
+};
+
+export const deleteUserReport = (id: number) => {
+  return privateClient.delete(`/user/reports/${id}`);
 };
