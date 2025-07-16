@@ -196,7 +196,7 @@ const Login: React.FC = () => {
         </div>
 
         {/* Additional Info */}
-        <div className="mt-8 bg-gradient-to-r from-blue-50 to-green-50 rounded-3xl p-6 border border-blue-200/50">
+        {/* <div className="mt-8 bg-gradient-to-r from-blue-50 to-green-50 rounded-3xl p-6 border border-blue-200/50">
           <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Informasi Login</h3>
           <div className="space-y-3 text-sm text-gray-600">
             <div className="flex items-center space-x-3">
@@ -216,7 +216,7 @@ const Login: React.FC = () => {
               <span><strong>Quick Login:</strong> Untuk testing dan demo aplikasi</span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </ModernLayout>
   );
