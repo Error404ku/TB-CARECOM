@@ -6,7 +6,7 @@ services:
       target: production
     container_name: tb-carecom-frontend
     ports:
-      - "5173:5173"  # expose ke host agar Nginx sistem bisa akses
+      - "5173:80"  # <- ini yang benar! port host 5173 -> container 80
     environment:
       - NODE_ENV=production
     restart: unless-stopped
