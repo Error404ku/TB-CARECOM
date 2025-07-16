@@ -41,6 +41,7 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
             Route::prefix('patient')->group(function () {
                 Route::get('/', [PatientController::class, 'getByUser']);
                 Route::put('/', [PatientController::class, 'update']);
+                Route::get('/qr-code', [PatientController::class, 'getQrCode']);
             });
         });
     });

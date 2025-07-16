@@ -92,6 +92,14 @@ class PatientController extends Controller
         return $this->success($result['message'], 200, $result['data']);
     }
 
+    public function getQrCode(){
+        $result = $this->patientService->getQrCode(Auth::user()->pmo->patient_id);
+        if (!$result['success']) {
+            return $this->error($result['message'], $result['code'], null);
+        }
+        return $this->success($result['message'], 200, $result['data']);
+    }
+
     public function update(UpdateRequest $request)
     {
         $result = $this->patientService->update(Auth::user()->pmo->patient_id, $request->validated());

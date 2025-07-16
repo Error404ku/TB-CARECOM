@@ -225,4 +225,30 @@ class PatientService
             ];
         }
     }
+
+    public function getQrCode(int $id): array
+    {
+        try {
+            $patient = $this->patientRepository->findById($id);
+            if (!$patient) {
+                return [
+                    'code' => 404,
+                    'success' => false,
+                    'message' => 'Patient tidak ditemukan'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Patient ditemukan',
+                'data' => $patient->qr_code_identifier
+            ];
+        } catch (\Exception $e) {
+            return [
+                'code' => 500,
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui patient'
+            ];
+        }
+    }
 }
