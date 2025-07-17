@@ -33,6 +33,73 @@ export interface PatientData {
   };
 }
 
+// New interfaces for dashboard API
+export interface DashboardPatient {
+  id: number;
+  name: string;
+  address: string;
+  no_telp: string;
+  start_treatment_date: string;
+  qr_code_identifier: string;
+  assigned_nurse_id: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  gender: string;
+  assigned_nurse: {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    rs: string;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface DashboardPMO {
+  id: number;
+  patient_id: number;
+  user_id: number;
+  name: string;
+  no_telp: string;
+  relationship: string;
+  created_at: string;
+  updated_at: string;
+  gender: string;
+  patient: DashboardPatient;
+}
+
+export interface DashboardPerawat {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  rs: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DashboardData {
+  patient: DashboardPatient;
+  daily_monitoring: number;
+  pmo: DashboardPMO;
+  perawat: DashboardPerawat;
+}
+
+export interface DashboardResponse {
+  meta: {
+    code: number;
+    message: string;
+  };
+  data: {
+    code: number;
+    success: boolean;
+    message: string;
+    data: DashboardData;
+  };
+}
+
 export interface DailyMonitoringResponse {
   status: number;
   message: string;
@@ -65,6 +132,39 @@ export interface QRCodeResponse {
   };
   data: string;
 }
+
+/**
+ * Get PMO dashboard data - NEW API
+ */
+export const getPMODashboard = async () => {
+  try {
+    return await privateClient.get<DashboardResponse>('/pmo/dashboard');
+  } catch (error: any) {
+    // If API endpoint doesn't exist (404) or unauthorized (401), return empty data
+    if (error.response?.status === 404 || error.response?.status === 401) {
+      console.warn('PMO dashboard API belum tersedia atau tidak diotorisasi');
+      return {
+        data: {
+          meta: {
+            code: error.response.status,
+            message: error.response.status === 404
+              ? "API dashboard PMO belum tersedia. Silakan hubungi administrator."
+              : "API dashboard PMO belum tersedia atau akses tidak diotorisasi."
+          },
+          data: {
+            code: error.response.status,
+            success: false,
+            message: error.response.status === 404
+              ? "API dashboard PMO belum tersedia"
+              : "Akses tidak diotorisasi",
+            data: null
+          }
+        }
+      };
+    }
+    throw error;
+  }
+};
 
 /**
  * Get all daily monitoring data for PMO
