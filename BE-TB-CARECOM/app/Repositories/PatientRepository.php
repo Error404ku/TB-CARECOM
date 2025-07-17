@@ -128,4 +128,19 @@ class PatientRepository
     {
         return $this->model->where('qr_code_identifier', $qrId)->first();
     }
+
+     public function countPatientActive()
+    {
+        return $this->model->where('status', 'active')->count();
+    }
+
+    public function countPatientMale()
+    {
+        return $this->model->where('gender', 'L')->count();
+    }
+
+    public function countPatientFemale()
+    {
+        return $this->model->where('gender', 'P')->count();
+    }
 }

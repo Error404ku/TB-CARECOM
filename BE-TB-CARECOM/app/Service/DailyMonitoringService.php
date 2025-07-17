@@ -157,7 +157,7 @@ class DailyMonitoringService
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil daftar Daily Monitoring'
+                'message' => 'Terjadi kesalahan saat mengambil daftar Daily Monitoring' . $e->getMessage()
             ];
         }
     }

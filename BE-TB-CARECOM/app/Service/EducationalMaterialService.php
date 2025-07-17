@@ -229,7 +229,7 @@ class EducationalMaterialService
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui Educational Material'
+                'message' => 'Terjadi kesalahan saat memperbarui Educational Material' . $e->getMessage()
             ];
         }
     }

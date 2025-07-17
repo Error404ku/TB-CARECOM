@@ -106,4 +106,9 @@ class DailyMonitoringRepository
     {
         return $this->model->whereDate('created_at', now())->count();
     }
+
+    public function countDailyMonitoringByPatientId(int $patientId): int
+    {
+        return $this->model->where('patient_id', $patientId)->count();
+    }
 }

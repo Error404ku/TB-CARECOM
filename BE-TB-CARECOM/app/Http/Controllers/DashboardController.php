@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Service\PmoService;
+use App\Traits\ApiResponse;
 use App\Service\UserService;
 use Illuminate\Http\Request;
+use App\Service\DashboardService;
 use App\Service\DailyMonitoringService;
 use App\Service\EducationalMaterialService;
-use App\Traits\ApiResponse;
 
 class DashboardController extends Controller
 {
@@ -18,6 +19,7 @@ class DashboardController extends Controller
         private UserService $userService,
         private DailyMonitoringService $dailyMonitoringService,
         private EducationalMaterialService $educationalMaterialService,
+        private DashboardService $dashboardService,
     ) {}
 
     public function dashboardAdmin()
@@ -33,5 +35,19 @@ class DashboardController extends Controller
             'daily_monitoring' => $dailyMonitoring,
             'educational_material' => $educationalMaterial,
         ]);
+    }
+
+    public function dashboardPmo()
+    {
+        $dashboard = $this->dashboardService->dashboardPmo();
+
+        return $this->success('Dashboard pmo', 200, $dashboard);
+    }
+
+    public function dashboardPerawat()
+    {
+        $dashboard = $this->dashboardService->dashboardPerawat();
+
+        return $this->success('Dashboard perawat', 200, $dashboard);
     }
 }
