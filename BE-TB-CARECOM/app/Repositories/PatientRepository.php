@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Patient;
+use Illuminate\Support\Facades\Auth;
 
 class PatientRepository
 {
@@ -29,7 +30,7 @@ class PatientRepository
                     })
                     ->orWhereHas('assignedNurse', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('rs', 'like', "%{$search}%");
+                            ->orWhere('rs', 'like', "%{$search}%");
                     });
             });
         }
@@ -77,7 +78,7 @@ class PatientRepository
                     })
                     ->orWhereHas('assignedNurse', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('rs', 'like', "%{$search}%");
+                            ->orWhere('rs', 'like', "%{$search}%");
                     });
             });
         }
@@ -114,7 +115,7 @@ class PatientRepository
         return $this->model->where('id', $id)->with(['assignedNurse', 'pmo'])->first();
     }
 
-     public function update(Patient $patient, array $data): bool
+    public function update(Patient $patient, array $data): bool
     {
         return $patient->update($data);
     }
@@ -129,18 +130,21 @@ class PatientRepository
         return $this->model->where('qr_code_identifier', $qrId)->first();
     }
 
-     public function countPatientActive()
+    public function countPatientActive()
     {
-        return $this->model->where('status', 'active')->count();
+        return $this->model
+            ->where('status', 'active')
+            ->where('assigned_nurse_id', Auth::user()->id)
+            ->count();
     }
 
     public function countPatientMale()
     {
-        return $this->model->where('gender', 'L')->count();
+        return $this->model->where('gender', 'L')->where('assigned_nurse_id', Auth::user()->id)->count();
     }
 
     public function countPatientFemale()
     {
-        return $this->model->where('gender', 'P')->count();
+        return $this->model->where('gender', 'P')->where('assigned_nurse_id', Auth::user()->id)->count();
     }
 }
