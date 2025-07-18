@@ -123,9 +123,12 @@ class DailyMonitoringService
             $dailyMonitorings = $this->dailyMonitoringRepository->getAll($filters);
             if($dailyMonitorings->isEmpty()) {
                 return [
-                    'code' => 404,
-                    'success' => false,
-                    'message' => 'Tidak ada data Daily Monitoring'
+                    'code' => 200,
+                    'success' => true,
+                    'message' => 'Tidak ada data Daily Monitoring',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
             
@@ -168,9 +171,12 @@ class DailyMonitoringService
             $dailyMonitorings = $this->dailyMonitoringRepository->getByPatientId($patientId, $filters);
             if($dailyMonitorings->isEmpty()) {
                 return [
-                    'code' => 404,
-                    'success' => false,
-                    'message' => 'Tidak ada data Daily Monitoring'
+                    'code' => 200,
+                    'success' => true,
+                    'message' => 'Tidak ada data Daily Monitoring',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
             

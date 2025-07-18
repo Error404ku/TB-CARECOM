@@ -201,7 +201,10 @@ class EducationalMaterialService
                 return [
                     'code' => 200,
                     'success' => true,
-                    'message' => 'Tidak ada data Educational Material'
+                    'message' => 'Tidak ada data Educational Material',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
 

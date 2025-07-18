@@ -116,7 +116,10 @@ class PatientService
                 return [
                     'code' => 200,
                     'success' => true,
-                    'message' => 'Tidak ada data Patient'
+                    'message' => 'Tidak ada data Patient',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
 
@@ -162,7 +165,10 @@ class PatientService
                 return [
                     'code' => 200,
                     'success' => true,
-                    'message' => 'Tidak ada data Patient'
+                    'message' => 'Tidak ada data Patient',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
 
@@ -195,7 +201,7 @@ class PatientService
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui patient'
+                'message' => 'Terjadi kesalahan saat memperbarui patient'.$e->getMessage()
             ];
         }
     }

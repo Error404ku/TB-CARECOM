@@ -142,7 +142,10 @@ class PmoService
                 return [
                     'code' => 200,
                     'success' => true,
-                    'message' => 'Tidak ada data PMO'
+                    'message' => 'Tidak ada data PMO',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
             
@@ -186,7 +189,10 @@ class PmoService
                 return [
                     'code' => 200,
                     'success' => true,
-                    'message' => 'Tidak ada data PMO'
+                    'message' => 'Tidak ada data PMO',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
             
