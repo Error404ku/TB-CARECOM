@@ -135,9 +135,9 @@ const PatientList: React.FC = () => {
               Coba Lagi
             </button>
           </div>
-        ) : patients.length === 0 ? (
+        ) : !patients || patients.length === 0 ? (
           <div className="p-6 text-center">
-            <p className="text-gray-500">Tidak ada pasien ditemukan</p>
+            <p className="text-gray-500">Anda tidak memiliki pasien.</p>
           </div>
         ) : (
           <>
@@ -170,7 +170,7 @@ const PatientList: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {patients.map((patient) => (
+                  {(patients || []).map((patient) => (
                     <tr key={patient.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
