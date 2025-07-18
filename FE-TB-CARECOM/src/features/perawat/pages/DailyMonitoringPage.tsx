@@ -1,7 +1,7 @@
 // features/perawat/pages/DailyMonitoringPage.tsx
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { usePatient, useDailyMonitoring } from '../hooks';
+import { useDailyMonitoring } from '../hooks';
 import { perawatUtils } from '../services';
 import type { DailyMonitoringParams } from '../types';
 import ModernLayout from '../../../layouts/ModernLayout';
@@ -19,8 +19,10 @@ const DailyMonitoringPage: React.FC = () => {
     per_page: 10
   });
 
-  const { patient, loading: patientLoading } = usePatient(patientId);
   const { dailyMonitoring, loading, error, isEmpty, refetch } = useDailyMonitoring(patientId);
+
+  // Get patient info from monitoring data if available
+  const patient = dailyMonitoring.length > 0 ? dailyMonitoring[0].patient : null;
 
   // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
@@ -35,35 +37,72 @@ const DailyMonitoringPage: React.FC = () => {
     refetch(patientId, newParams);
   };
 
-  if (patientLoading) {
+  if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Memuat data...</p>
+      <ModernLayout title="Daily Monitoring" subtitle="Memuat data...">
+        <div className="flex justify-center items-center min-h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Memuat data...</p>
+          </div>
         </div>
-      </div>
+      </ModernLayout>
     );
   }
 
-  if (!patient) {
+  if (error) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-600">Pasien tidak ditemukan</p>
-        <Link
-          to="/perawat/patients"
-          className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Kembali ke Daftar Pasien
-        </Link>
-      </div>
+      <ModernLayout title="Daily Monitoring" subtitle="Error">
+        <div className="text-center py-12">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => refetch(patientId)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-4"
+          >
+            Coba Lagi
+          </button>
+          <Link
+            to="/perawat/patients"
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+          >
+            Kembali ke Daftar Pasien
+          </Link>
+        </div>
+      </ModernLayout>
+    );
+  }
+
+  if (isEmpty || dailyMonitoring.length === 0) {
+    return (
+      <ModernLayout title="Daily Monitoring" subtitle="Data monitoring harian">
+        <div className="text-center py-12">
+          <div className="text-gray-400 mb-4 text-6xl">
+            📊
+          </div>
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">Belum Ada Data Monitoring</h3>
+          <p className="text-gray-500 mb-6">
+            Belum ada data monitoring harian untuk pasien ID: {patientId}
+          </p>
+          <div className="space-x-4">
+            <Link
+              to="/perawat/patients"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Kembali ke Daftar Pasien
+            </Link>
+          </div>
+          <p className="text-sm text-gray-500 mt-4">
+            Data monitoring akan muncul setelah pasien melakukan pelaporan harian
+          </p>
+        </div>
+      </ModernLayout>
     );
   }
 
   return (
-    <ModernLayout title={`Monitoring Harian - ${patient?.name || 'Loading...'}`} subtitle="Data monitoring harian pasien">
+    <ModernLayout title={`Monitoring Harian - ${patient?.name || 'Pasien'}`} subtitle="Data monitoring harian pasien">
       {/* Header */}
-      <div>
+      <div className="mb-6">
         <nav className="flex mb-4" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-3">
             <li className="inline-flex items-center">
@@ -73,17 +112,6 @@ const DailyMonitoringPage: React.FC = () => {
               >
                 Daftar Pasien
               </Link>
-            </li>
-            <li>
-              <div className="flex items-center">
-                <span className="mx-2 text-gray-400">/</span>
-                <Link
-                  to={`/perawat/patients/${patient.id}`}
-                  className="text-sm font-medium text-gray-700 hover:text-blue-600"
-                >
-                  {patient.name}
-                </Link>
-              </div>
             </li>
             <li>
               <div className="flex items-center">
@@ -98,22 +126,22 @@ const DailyMonitoringPage: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Monitoring Harian</h1>
             <p className="text-gray-600 mt-2">
-              Data monitoring harian untuk pasien: <span className="font-semibold">{patient.name}</span>
+              Data monitoring harian untuk: <span className="font-semibold">{patient?.name || `Pasien ID ${patientId}`}</span>
             </p>
           </div>
           
           <Link
-            to={`/perawat/patients/${patient.id}`}
+            to="/perawat/patients"
             className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
-            Kembali ke Detail Pasien
+            Kembali ke Daftar Pasien
           </Link>
         </div>
       </div>
 
-      {/* Patient Summary Card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
+      {/* Patient Summary Card - Simplified */}
+      {patient && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -125,23 +153,15 @@ const DailyMonitoringPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900">{patient.name}</h3>
               <p className="text-sm text-gray-600">
-                {perawatUtils.formatGender(patient.gender)} • {patient.no_telp}
+                ID Pasien: {patient.id} • Total Monitoring: {dailyMonitoring.length}
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <span className={`px-3 py-1 text-sm font-medium rounded-full ${perawatUtils.getStatusBadgeColor(patient.status)}`}>
-              {perawatUtils.formatPatientStatus(patient.status)}
-            </span>
-            <p className="text-sm text-gray-600 mt-1">
-              Mulai pengobatan: {perawatUtils.formatDate(patient.start_treatment_date)}
-            </p>
-          </div>
         </div>
-      </div>
+      )}
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search Input */}
@@ -219,77 +239,41 @@ const DailyMonitoringPage: React.FC = () => {
 
       {/* Monitoring Data */}
       <div className="bg-white rounded-lg shadow">
-        {loading ? (
-          <div className="p-6 text-center">
-            <p className="text-gray-500">Memuat data monitoring...</p>
-          </div>
-        ) : error ? (
-          <div className="p-6 text-center">
-            <p className="text-red-600">{error}</p>
-            <button
-              onClick={() => refetch(patientId)}
-              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Coba Lagi
-            </button>
-          </div>
-        ) : dailyMonitoring.length === 0 || isEmpty ? (
-          <div className="p-6 text-center">
-            <div className="text-gray-400 mb-4">
-              📊
-            </div>
-            <p className="text-gray-500 mb-4">
-              {isEmpty ? 'Belum ada data monitoring harian untuk pasien ini' : 'Tidak ada data monitoring yang sesuai dengan filter'}
-            </p>
-            <Link
-              to={`/perawat/patients/${patient.id}`}
-              className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 mr-2"
-            >
-              Kembali ke Detail Pasien
-            </Link>
-            {isEmpty && (
-              <span className="text-sm text-gray-500">
-                Data monitoring akan muncul setelah pasien melakukan pelaporan harian
-              </span>
-            )}
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-200">
-            {dailyMonitoring.map((monitoring) => (
-              <div key={monitoring.id} className="p-6 hover:bg-gray-50">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        ID: {monitoring.id}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        Waktu Obat: {perawatUtils.formatDateTime(monitoring.medication_time)}
-                      </span>
-                    </div>
-                    <p className="text-gray-900 mb-2">{monitoring.description}</p>
-                    <div className="text-sm text-gray-500">
-                      {monitoring.created_at && (
-                        <p>Dicatat: {perawatUtils.formatDateTime(monitoring.created_at)}</p>
-                      )}
-                      {monitoring.updated_at && monitoring.updated_at !== monitoring.created_at && (
-                        <p>Diperbarui: {perawatUtils.formatDateTime(monitoring.updated_at)}</p>
-                      )}
-                    </div>
+        <div className="divide-y divide-gray-200">
+          {dailyMonitoring.map((monitoring) => (
+            <div key={monitoring.id} className="p-6 hover:bg-gray-50">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      ID: {monitoring.id}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      Waktu Obat: {perawatUtils.formatDateTime(monitoring.medication_time)}
+                    </span>
                   </div>
-                  <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                      Edit
-                    </button>
-                    <button className="text-red-600 hover:text-red-900 text-sm font-medium">
-                      Hapus
-                    </button>
+                  <p className="text-gray-900 mb-2">{monitoring.description}</p>
+                  <div className="text-sm text-gray-500">
+                    {monitoring.created_at && (
+                      <p>Dicatat: {perawatUtils.formatDateTime(monitoring.created_at)}</p>
+                    )}
+                    {monitoring.updated_at && monitoring.updated_at !== monitoring.created_at && (
+                      <p>Diperbarui: {perawatUtils.formatDateTime(monitoring.updated_at)}</p>
+                    )}
                   </div>
                 </div>
+                <div className="flex space-x-2">
+                  <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
+                    Edit
+                  </button>
+                  <button className="text-red-600 hover:text-red-900 text-sm font-medium">
+                    Hapus
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
     </ModernLayout>
   );

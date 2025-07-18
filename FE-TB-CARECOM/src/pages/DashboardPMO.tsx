@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import ModernLayout from '../layouts/ModernLayout';
 import { 
-  getAllDailyMonitoring, 
-  getPatientData, 
+  getPMODashboard,
   updatePatientData, 
   updateDailyMonitoring,
   getPatientQRCode,
   type DailyMonitoringEntry,
   type PatientData,
   type UpdatePatientRequest,
-  type UpdateDailyMonitoringRequest
+  type UpdateDailyMonitoringRequest,
+  type DashboardData
 } from '../api/pmoApi';
 import { showSuccess, showError, showConfirm } from '../utils/sweetAlert';
 import { useAuth } from '../store/AuthContext';
@@ -18,8 +18,7 @@ import * as QRCode from 'qrcode';
 const DashboardPMO: React.FC = () => {
   const { authLoading } = useAuth();
   const [selectedTab, setSelectedTab] = useState('overview');
-  // const [loading, setLoading] = useState(true);
-  const [patientData, setPatientData] = useState<PatientData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [dailyMonitoring, setDailyMonitoring] = useState<DailyMonitoringEntry[]>([]);
   
   // Edit states
@@ -39,50 +38,73 @@ const DashboardPMO: React.FC = () => {
   });
 
   // Track loading per tab
-  const [loadingPatient, setLoadingPatient] = useState(false);
+  const [loadingDashboard, setLoadingDashboard] = useState(false);
   const [loadingMonitoring, setLoadingMonitoring] = useState(false);
 
-  // Lazy load patient data
-  const loadPatientDataLazy = async () => {
-    if (patientData || loadingPatient) return;
-    setLoadingPatient(true);
+  // Transform dashboard patient data to PatientData format for compatibility
+  const getPatientDataFromDashboard = (dashboard: DashboardData): PatientData | null => {
+    if (!dashboard?.patient) return null;
+    
+    return {
+      id: dashboard.patient.id,
+      name: dashboard.patient.name,
+      address: dashboard.patient.address,
+      gender: dashboard.patient.gender === 'P' ? 'Perempuan' : 'Laki-laki',
+      no_telp: dashboard.patient.no_telp,
+      status: dashboard.patient.status,
+      pmo: {
+        id: dashboard.pmo.id,
+        name: dashboard.pmo.name,
+        relationship: dashboard.pmo.relationship,
+        no_telp: dashboard.pmo.no_telp
+      },
+      assignedNurse: {
+        id: dashboard.patient.assigned_nurse.id,
+        name: dashboard.patient.assigned_nurse.name,
+        email: dashboard.patient.assigned_nurse.email,
+        rs: dashboard.patient.assigned_nurse.rs
+      }
+    };
+  };
+
+  // Load dashboard data
+  const loadDashboardData = async () => {
+    if (dashboardData || loadingDashboard) return;
+    setLoadingDashboard(true);
     try {
-      const patientResponse = await getPatientData();
-      if (patientResponse.data && patientResponse.data.data) {
-        setPatientData(patientResponse.data.data);
+      const response = await getPMODashboard();
+      if (response.data?.meta?.code === 200 && response.data?.data?.data) {
+        setDashboardData(response.data.data.data);
+        
         // Initialize edit form with current patient data
-        const patient = patientResponse.data.data;
+        const patient = response.data.data.data.patient;
         setEditPatientData({
           name: patient.name,
           address: patient.address,
-          gender: patient.gender,
+          gender: patient.gender === 'P' ? 'Perempuan' : 'Laki-laki',
           no_telp: patient.no_telp,
           status: patient.status as 'aktif' | 'sembuh' | 'gagal'
         });
-      } else if (patientResponse.data && (patientResponse.data.status === 404 || patientResponse.data.status === 401)) {
-        // API not available or unauthorized
-        console.warn('Patient API issue:', patientResponse.data.message);
+      } else if (response.data?.meta?.code === 404 || response.data?.meta?.code === 401) {
+        console.warn('Dashboard API issue:', response.data.meta.message);
       }
     } catch (error) {
-      console.error('Error loading patient data:', error);
-      showError('Gagal Memuat Data', 'Terjadi kesalahan saat memuat data pasien.');
+      console.error('Error loading dashboard data:', error);
+      showError('Gagal Memuat Data', 'Terjadi kesalahan saat memuat data dashboard.');
     } finally {
-      setLoadingPatient(false);
+      setLoadingDashboard(false);
     }
   };
 
-  // Lazy load daily monitoring data
+  // Lazy load daily monitoring data (only for monitoring tab)
   const loadDailyMonitoringLazy = async () => {
     if (dailyMonitoring.length > 0 || loadingMonitoring) return;
     setLoadingMonitoring(true);
     try {
-      const monitoringResponse = await getAllDailyMonitoring();
-      if (monitoringResponse.data && monitoringResponse.data.data) {
-        setDailyMonitoring(monitoringResponse.data.data);
-      } else if (monitoringResponse.data && (monitoringResponse.data.status === 404 || monitoringResponse.data.status === 401)) {
-        // API not available or unauthorized
-        console.warn('Monitoring API issue:', monitoringResponse.data.message);
-      }
+      // Note: Import getAllDailyMonitoring when needed for monitoring tab
+      // For now, we'll show a placeholder until user explicitly opens monitoring tab
+      console.warn('Monitoring data disabled for performance');
+      setDailyMonitoring([]);
     } catch (error) {
       console.error('Error loading monitoring data:', error);
       showError('Gagal Memuat Data', 'Terjadi kesalahan saat memuat data monitoring.');
@@ -95,11 +117,10 @@ const DashboardPMO: React.FC = () => {
   useEffect(() => {
     if (!authLoading) {
       if (selectedTab === 'overview') {
-        // Overview: load both if not loaded
-        if (!patientData) loadPatientDataLazy();
-        if (dailyMonitoring.length === 0) loadDailyMonitoringLazy();
+        // Overview: only load dashboard data (monitoring removed for performance)
+        if (!dashboardData) loadDashboardData();
       } else if (selectedTab === 'patient') {
-        if (!patientData) loadPatientDataLazy();
+        if (!dashboardData) loadDashboardData();
       } else if (selectedTab === 'monitoring') {
         if (dailyMonitoring.length === 0) loadDailyMonitoringLazy();
       }
@@ -108,9 +129,9 @@ const DashboardPMO: React.FC = () => {
   }, [selectedTab, authLoading]);
 
   // Reload helpers for edit
-  const reloadPatientData = async () => {
-    setPatientData(null);
-    await loadPatientDataLazy();
+  const reloadDashboardData = async () => {
+    setDashboardData(null);
+    await loadDashboardData();
   };
   const reloadMonitoringData = async () => {
     setDailyMonitoring([]);
@@ -129,7 +150,7 @@ const DashboardPMO: React.FC = () => {
         if (response.data.status === 200) {
           showSuccess('Berhasil!', 'Data pasien berhasil diperbarui.');
           setIsEditingPatient(false);
-          reloadPatientData(); // Reload data
+          reloadDashboardData(); // Reload data
         }
       }
     } catch (error) {
@@ -205,7 +226,7 @@ const DashboardPMO: React.FC = () => {
         // Create download link
         const link = document.createElement('a');
         link.href = qrDataUrl;
-        link.download = `qr-code-${patientData?.name || 'patient'}-${new Date().getTime()}.png`;
+        link.download = `qr-code-${dashboardData?.patient?.name || 'patient'}-${new Date().getTime()}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -233,7 +254,10 @@ const DashboardPMO: React.FC = () => {
     }
   };
 
-  if (authLoading || (selectedTab === 'overview' && (loadingPatient || loadingMonitoring)) || (selectedTab === 'patient' && loadingPatient) || (selectedTab === 'monitoring' && loadingMonitoring)) {
+  // Get transformed patient data for compatibility
+  const patientData = dashboardData ? getPatientDataFromDashboard(dashboardData) : null;
+
+  if (authLoading || (selectedTab === 'overview' && loadingDashboard) || (selectedTab === 'patient' && loadingDashboard) || (selectedTab === 'monitoring' && loadingMonitoring)) {
     return (
       <ModernLayout title="Dashboard PMO" subtitle="Memuat data...">
         <div className="flex items-center justify-center min-h-96">
@@ -253,20 +277,20 @@ const DashboardPMO: React.FC = () => {
   return (
     <ModernLayout title="Dashboard PMO" subtitle="Kelola pengobatan TB pasien Anda">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-3xl p-8 text-white mb-8">
+      <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-3xl p-6 md:p-8 text-white mb-6 md:mb-8">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              Selamat Datang, {patientData?.pmo.name || 'PMO'}!
+          <div className="flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+              Selamat Datang, {dashboardData?.pmo?.name || 'PMO'}!
             </h1>
-            <p className="text-blue-100">
-              {patientData 
-                ? `Kelola pengobatan TB untuk ${patientData.name}`
+            <p className="text-blue-100 text-sm md:text-base">
+              {dashboardData 
+                ? `Kelola pengobatan TB untuk ${dashboardData.patient.name}`
                 : 'Dashboard PMO untuk mengelola pengobatan TB pasien'
               }
             </p>
           </div>
-          <div className="hidden md:block">
+          <div className="hidden md:block ml-4">
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -277,7 +301,7 @@ const DashboardPMO: React.FC = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="mb-8">
+      <div className="mb-6 md:mb-8">
         <div className="flex space-x-1 bg-white/80 backdrop-blur-sm rounded-2xl p-1 shadow-lg border border-gray-200/50">
           {[
             { id: 'overview', label: 'Overview', icon: '📊' },
@@ -287,14 +311,15 @@ const DashboardPMO: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setSelectedTab(tab.id)}
-              className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+              className={`flex-1 flex items-center justify-center space-x-1 md:space-x-2 py-2 md:py-3 px-2 md:px-4 rounded-xl font-semibold transition-all duration-200 text-sm md:text-base ${
                 selectedTab === tab.id
                   ? 'bg-gradient-to-r from-blue-600 to-green-600 text-white shadow-lg'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
+              <span className="text-sm md:text-base">{tab.icon}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
             </button>
           ))}
         </div>
@@ -303,7 +328,7 @@ const DashboardPMO: React.FC = () => {
       {/* Overview Tab */}
       {selectedTab === 'overview' && (
         <div className="space-y-8">
-          {!patientData ? (
+          {!dashboardData ? (
             /* No Data State */
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 text-center">
               <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -319,108 +344,63 @@ const DashboardPMO: React.FC = () => {
           ) : (
             <>
               {/* Stats Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200/50">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-1">{patientData.name}</h3>
-                  <p className="text-gray-600 text-sm mb-2">Nama Pasien</p>
-                  <span className={`text-sm font-medium px-2 py-1 rounded ${getStatusColor(patientData.status)}`}>
-                    {patientData.status}
+                  <h3 className="text-lg md:text-2xl font-bold text-gray-800 mb-1 truncate">{patientData?.name}</h3>
+                  <p className="text-gray-600 text-xs md:text-sm mb-2">Nama Pasien</p>
+                  <span className={`text-xs md:text-sm font-medium px-2 py-1 rounded ${getStatusColor(patientData?.status || '')}`}>
+                    {patientData?.status}
                   </span>
                 </div>
 
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
-                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200/50">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-1">{dailyMonitoring.length}</h3>
-                  <p className="text-gray-600 text-sm mb-2">Total Monitoring</p>
-                  <span className="text-sm font-medium text-green-600">Laporan</span>
+                  <h3 className="text-lg md:text-2xl font-bold text-gray-800 mb-1">{dashboardData.daily_monitoring}</h3>
+                  <p className="text-gray-600 text-xs md:text-sm mb-2">Total Monitoring</p>
+                  <span className="text-xs md:text-sm font-medium text-green-600">Laporan</span>
                 </div>
 
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200/50">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-1">{patientData.pmo.name}</h3>
-                  <p className="text-gray-600 text-sm mb-2">PMO</p>
-                  <span className="text-sm font-medium text-purple-600">{patientData.pmo.relationship}</span>
+                  <h3 className="text-lg md:text-2xl font-bold text-gray-800 mb-1 truncate">{dashboardData.pmo.name}</h3>
+                  <p className="text-gray-600 text-xs md:text-sm mb-2">PMO</p>
+                  <span className="text-xs md:text-sm font-medium text-purple-600 truncate block">{dashboardData.pmo.relationship}</span>
                 </div>
 
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
-                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg border border-gray-200/50">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                    <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m-2 0H7m5 0H9" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-1">{patientData.assignedNurse.name}</h3>
-                  <p className="text-gray-600 text-sm mb-2">Perawat</p>
-                  <span className="text-sm font-medium text-orange-600">{patientData.assignedNurse.rs}</span>
+                  <h3 className="text-lg md:text-2xl font-bold text-gray-800 mb-1 truncate">{dashboardData.perawat.name}</h3>
+                  <p className="text-gray-600 text-xs md:text-sm mb-2">Perawat</p>
+                  <span className="text-xs md:text-sm font-medium text-orange-600 truncate block">{dashboardData.perawat.rs}</span>
                 </div>
               </div>
             </>
           )}
 
-          {/* Recent Monitoring */}
-          {patientData && (
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Monitoring Terbaru</h2>
-              {dailyMonitoring.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-600 mb-2">Belum Ada Data Monitoring</h3>
-                  <p className="text-gray-500">
-                    Data monitoring harian belum tersedia atau API belum aktif.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {dailyMonitoring.slice(0, 5).map((monitoring) => (
-                    <div key={monitoring.id} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="font-semibold text-gray-800">
-                            {new Date(monitoring.medication_time).toLocaleDateString('id-ID', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </p>
-                        </div>
-                        <p className="text-gray-600">{monitoring.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+
         </div>
       )}
 
       {/* Patient Tab */}
       {selectedTab === 'patient' && (
-        !patientData ? (
+        !dashboardData ? (
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50 text-center">
             <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -434,22 +414,22 @@ const DashboardPMO: React.FC = () => {
           </div>
         ) : (
         <div className="space-y-8">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Data Pasien</h2>
-              <div className="flex space-x-3">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-xl border border-gray-200/50">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800">Data Pasien</h2>
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleDownloadQRCode}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                  className="flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200 text-sm"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm0 13h5a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1v-5a1 1 0 011-1zm13-13h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1V5a1 1 0 011-1z" />
                   </svg>
                   <span>Download QR</span>
                 </button>
                 <button
                   onClick={() => setIsEditingPatient(!isEditingPatient)}
-                  className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+                  className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 text-sm ${
                     isEditingPatient
                       ? 'bg-gray-500 text-white hover:bg-gray-600'
                       : 'bg-gradient-to-r from-blue-600 to-green-600 text-white hover:shadow-lg'
@@ -461,7 +441,7 @@ const DashboardPMO: React.FC = () => {
             </div>
 
             {isEditingPatient ? (
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
@@ -469,7 +449,7 @@ const DashboardPMO: React.FC = () => {
                       type="text"
                       value={editPatientData.name}
                       onChange={(e) => setEditPatientData({...editPatientData, name: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -478,7 +458,7 @@ const DashboardPMO: React.FC = () => {
                       value={editPatientData.address}
                       onChange={(e) => setEditPatientData({...editPatientData, address: e.target.value})}
                       rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -486,7 +466,7 @@ const DashboardPMO: React.FC = () => {
                     <select
                       value={editPatientData.gender}
                       onChange={(e) => setEditPatientData({...editPatientData, gender: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     >
                       <option value="Laki-laki">Laki-laki</option>
                       <option value="Perempuan">Perempuan</option>
@@ -500,7 +480,7 @@ const DashboardPMO: React.FC = () => {
                       type="text"
                       value={editPatientData.no_telp}
                       onChange={(e) => setEditPatientData({...editPatientData, no_telp: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -508,7 +488,7 @@ const DashboardPMO: React.FC = () => {
                     <select
                       value={editPatientData.status}
                       onChange={(e) => setEditPatientData({...editPatientData, status: e.target.value as 'aktif' | 'sembuh' | 'gagal'})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     >
                       <option value="aktif">Aktif</option>
                       <option value="sembuh">Sembuh</option>
@@ -518,7 +498,7 @@ const DashboardPMO: React.FC = () => {
                   <div className="pt-4">
                     <button
                       onClick={handleUpdatePatient}
-                      className="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                      className="w-full bg-gradient-to-r from-blue-600 to-green-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 text-sm"
                     >
                       Simpan Perubahan
                     </button>
@@ -526,30 +506,30 @@ const DashboardPMO: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                    <p className="text-gray-800 font-medium">{patientData.name}</p>
+                    <p className="text-gray-800 font-medium text-sm md:text-base">{patientData?.name}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Alamat</label>
-                    <p className="text-gray-800">{patientData.address}</p>
+                    <p className="text-gray-800 text-sm md:text-base">{patientData?.address}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
-                    <p className="text-gray-800">{patientData.gender}</p>
+                    <p className="text-gray-800 text-sm md:text-base">{patientData?.gender}</p>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Nomor Telepon</label>
-                    <p className="text-gray-800">{patientData.no_telp}</p>
+                    <p className="text-gray-800 text-sm md:text-base">{patientData?.no_telp}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Status Pengobatan</label>
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(patientData.status)}`}>
-                      {patientData.status}
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs md:text-sm font-medium ${getStatusColor(patientData?.status || '')}`}>
+                      {patientData?.status}
                     </span>
                   </div>
                 </div>
@@ -558,39 +538,39 @@ const DashboardPMO: React.FC = () => {
           </div>
 
           {/* PMO and Nurse Info */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-gray-200/50">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Informasi PMO</h3>
+              <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">Informasi PMO</h3>
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Nama PMO</label>
-                  <p className="text-gray-800">{patientData.pmo.name}</p>
+                  <p className="text-gray-800 text-sm md:text-base">{dashboardData.pmo.name}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Hubungan</label>
-                  <p className="text-gray-800">{patientData.pmo.relationship}</p>
+                  <p className="text-gray-800 text-sm md:text-base">{dashboardData.pmo.relationship}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Nomor Telepon</label>
-                  <p className="text-gray-800">{patientData.pmo.no_telp}</p>
+                  <p className="text-gray-800 text-sm md:text-base">{dashboardData.pmo.no_telp}</p>
                 </div>
               </div>
             </div>
 
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-gray-200/50">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Perawat yang Ditugaskan</h3>
+              <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">Perawat yang Ditugaskan</h3>
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Nama Perawat</label>
-                  <p className="text-gray-800">{patientData.assignedNurse.name}</p>
+                  <p className="text-gray-800 text-sm md:text-base">{dashboardData.perawat.name}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <p className="text-gray-800">{patientData.assignedNurse.email}</p>
+                  <p className="text-gray-800 text-sm md:text-base">{dashboardData.perawat.email}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Rumah Sakit</label>
-                  <p className="text-gray-800">{patientData.assignedNurse.rs}</p>
+                  <p className="text-gray-800 text-sm md:text-base">{dashboardData.perawat.rs}</p>
                 </div>
               </div>
             </div>
@@ -602,27 +582,27 @@ const DashboardPMO: React.FC = () => {
       {/* Daily Monitoring Tab */}
       {selectedTab === 'monitoring' && (
         <div className="space-y-6">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-200/50">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Riwayat Daily Monitoring</h2>
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-xl border border-gray-200/50">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6">Riwayat Daily Monitoring</h2>
             {dailyMonitoring.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-8 md:py-12">
                 <div className="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-600 mb-2">Belum Ada Data Monitoring</h3>
-                <p className="text-gray-500">
+                <h3 className="text-lg md:text-xl font-bold text-gray-600 mb-2">Belum Ada Data Monitoring</h3>
+                <p className="text-gray-500 text-sm md:text-base">
                   Data monitoring harian belum tersedia atau API belum aktif. Silakan hubungi administrator.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {dailyMonitoring.map((monitoring) => (
-                <div key={monitoring.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200">
+                <div key={monitoring.id} className="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-lg transition-all duration-200">
                   {editingMonitoring?.id === monitoring.id ? (
                     <div className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Waktu Minum Obat</label>
                           <input
@@ -632,7 +612,7 @@ const DashboardPMO: React.FC = () => {
                               ...editMonitoringData,
                               medication_time: e.target.value.replace('T', ' ') + ':00'
                             })}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm"
                           />
                         </div>
                         <div>
@@ -644,36 +624,36 @@ const DashboardPMO: React.FC = () => {
                               description: e.target.value
                             })}
                             rows={3}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm"
                           />
                         </div>
                       </div>
-                      <div className="flex space-x-4">
+                      <div className="flex flex-col sm:flex-row gap-3">
                         <button
                           onClick={handleUpdateMonitoring}
-                          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+                          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 text-sm"
                         >
                           Simpan
                         </button>
                         <button
                           onClick={cancelEditingMonitoring}
-                          className="px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200"
+                          className="px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all duration-200 text-sm"
                         >
                           Batal
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                       <div className="flex-1">
-                        <div className="flex items-center space-x-4 mb-3">
-                          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="flex items-center space-x-3 md:space-x-4 mb-3">
+                          <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center">
+                            <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-800">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-800 text-sm md:text-base">
                               {new Date(monitoring.medication_time).toLocaleDateString('id-ID', {
                                 weekday: 'long',
                                 year: 'numeric',
@@ -683,14 +663,14 @@ const DashboardPMO: React.FC = () => {
                                 minute: '2-digit'
                               })}
                             </h3>
-                            <p className="text-sm text-gray-600">Pasien: {monitoring.patient.name}</p>
+                            <p className="text-xs md:text-sm text-gray-600">Pasien: {monitoring.patient.name}</p>
                           </div>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">{monitoring.description}</p>
+                        <p className="text-gray-700 leading-relaxed text-sm md:text-base">{monitoring.description}</p>
                       </div>
                       <button
                         onClick={() => startEditingMonitoring(monitoring)}
-                        className="ml-4 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200"
+                        className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 text-sm self-start"
                       >
                         Edit
                       </button>
