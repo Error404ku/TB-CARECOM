@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ModernLayout from '../layouts/ModernLayout';
 import QRScanner from '../components/QRScanner';
+import { useAuth } from '../store/AuthContext';
 
 const Home: React.FC = () => {
+  const { user } = useAuth();
+  const [hasToken, setHasToken] = useState(false);
+
+  useEffect(() => {
+    console.log('user:', user);
+    setHasToken(!!localStorage.getItem('token'));
+  }, []);
+
   const features = [
     {
       icon: (
@@ -165,32 +174,34 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
-
+            
       {/* CTA Section */}
-      <div className="py-16">
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 text-center border border-gray-200/50">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
-            Siap Bergabung?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Bergabunglah dengan ribuan PMO dan tenaga kesehatan lainnya dalam perjuangan melawan TB
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/register"
-              className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300"
-            >
-              Daftar Sekarang
-            </Link>
-            <Link
-              to="/login"
-              className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300"
-            >
-              Masuk
-            </Link>
+      {!hasToken && (
+        <div className="py-16">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 text-center border border-gray-200/50">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
+              Siap Bergabung?
+            </h2>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Bergabunglah dengan ribuan PMO dan tenaga kesehatan lainnya dalam perjuangan melawan TB
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/register"
+                className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300"
+              >
+                Daftar Sekarang
+              </Link>
+              <Link
+                to="/login"
+                className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300"
+              >
+                Masuk
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </ModernLayout>
   );
 };

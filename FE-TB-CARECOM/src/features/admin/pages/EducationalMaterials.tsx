@@ -294,7 +294,7 @@ const EducationalMaterials: React.FC = () => {
 
       {/* Search, Filter and Controls */}
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 mb-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           {/* Search */}
           <div className="flex-1 max-w-md">
             <form onSubmit={handleSearch} className="flex">
@@ -327,8 +327,8 @@ const EducationalMaterials: React.FC = () => {
             </form>
           </div>
 
-          {/* Sort and Per Page Controls */}
-          <div className="flex items-center space-x-4">
+          {/* Sort, Per Page, and Add Button Controls */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-4 w-full lg:w-auto">
             {/* Sort By */}
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">Urutkan:</label>
@@ -367,7 +367,7 @@ const EducationalMaterials: React.FC = () => {
             {/* Add Button */}
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+              className="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

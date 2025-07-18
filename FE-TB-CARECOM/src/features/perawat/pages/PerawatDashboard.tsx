@@ -1,18 +1,33 @@
 // features/perawat/pages/PerawatDashboard.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { usePatients } from '../hooks';
+import { getPerawatDashboard, type PerawatDashboardStats } from '../../../api/perawatApi';
 import ModernLayout from '../../../layouts/ModernLayout';
 
 const PerawatDashboard: React.FC = () => {
-  const { patients, loading } = usePatients({ status: 'aktif' });
+  const [stats, setStats] = useState<PerawatDashboardStats['patient']>({ active: 0, male: 0, female: 0 });
+  const [loading, setLoading] = useState(true);
 
-  // Calculate quick stats
-  const totalActivePatients = patients.length;
-  const malePatients = patients.filter(p => p.gender === 'L').length;
-  const femalePatients = patients.filter(p => p.gender === 'P').length;
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true);
+      try {
+        const response = await getPerawatDashboard();
+        if (response.data?.data?.data?.patient) {
+          setStats(response.data.data.data.patient);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
-
+  const totalActivePatients = stats.active;
+  const malePatients = stats.male;
+  const femalePatients = stats.female;
+  const malePercent = totalActivePatients > 0 ? Math.round((malePatients/totalActivePatients)*100) : 0;
+  const femalePercent = totalActivePatients > 0 ? Math.round((femalePatients/totalActivePatients)*100) : 0;
 
   return (
     <ModernLayout title="Dashboard Perawat" subtitle="Kelola dan pantau pasien TB yang ditugaskan kepada Anda">
@@ -50,7 +65,7 @@ const PerawatDashboard: React.FC = () => {
           </div>
           <h3 className="text-2xl font-bold text-gray-800 mb-1">{loading ? '...' : malePatients}</h3>
           <p className="text-gray-600 text-sm mb-2">Pasien Laki-laki</p>
-          <span className="text-blue-600 text-sm font-medium">{Math.round((malePatients/totalActivePatients)*100) || 0}%</span>
+          <span className="text-blue-600 text-sm font-medium">{malePercent}%</span>
         </div>
         
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
@@ -59,7 +74,7 @@ const PerawatDashboard: React.FC = () => {
           </div>
           <h3 className="text-2xl font-bold text-gray-800 mb-1">{loading ? '...' : femalePatients}</h3>
           <p className="text-gray-600 text-sm mb-2">Pasien Perempuan</p>
-          <span className="text-pink-600 text-sm font-medium">{Math.round((femalePatients/totalActivePatients)*100) || 0}%</span>
+          <span className="text-pink-600 text-sm font-medium">{femalePercent}%</span>
         </div>
       </div>
 
@@ -102,93 +117,7 @@ const PerawatDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Recent Patients */}
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Pasien Terbaru</h2>
-          <Link
-            to="/perawat/patients"
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Lihat Semua →
-          </Link>
-        </div>
-        
-        {loading ? (
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 p-6">
-            <p className="text-center text-gray-500">Memuat data pasien...</p>
-          </div>
-        ) : patients.length === 0 ? (
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 p-6">
-            <p className="text-center text-gray-500">Belum ada pasien yang ditugaskan</p>
-          </div>
-        ) : (
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-200/50 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nama Pasien
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Jenis Kelamin
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Mulai Pengobatan
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Aksi
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {patients.slice(0, 5).map((patient) => (
-                    <tr key={patient.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-xl flex items-center justify-center mr-3">
-                            <span className="text-white font-semibold text-sm">
-                              {patient.name.split(' ').map(n => n[0]).join('')}
-                            </span>
-                          </div>
-                          <div className="text-sm font-medium text-gray-900">{patient.name}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {patient.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          patient.status === 'Aktif' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {patient.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(patient.start_treatment_date).toLocaleDateString('id-ID')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link
-                          to={`/perawat/patients/${patient.id}`}
-                          className="text-blue-600 hover:text-blue-900 font-medium"
-                        >
-                          Detail
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </div>
+     
     </ModernLayout>
   );
 };
