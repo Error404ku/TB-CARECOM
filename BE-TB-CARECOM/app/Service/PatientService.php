@@ -114,8 +114,8 @@ class PatientService
             $patients = $this->patientRepository->getAll($filters);
             if ($patients->isEmpty()) {
                 return [
-                    'code' => 404,
-                    'success' => false,
+                    'code' => 200,
+                    'success' => true,
                     'message' => 'Tidak ada data Patient'
                 ];
             }
@@ -160,8 +160,8 @@ class PatientService
             $patients = $this->patientRepository->findByAssignedNurseId($assignedNurseId, $filters);
             if ($patients->isEmpty()) {
                 return [
-                    'code' => 404,
-                    'success' => false,
+                    'code' => 200,
+                    'success' => true,
                     'message' => 'Tidak ada data Patient'
                 ];
             }

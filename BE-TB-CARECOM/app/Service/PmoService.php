@@ -140,8 +140,8 @@ class PmoService
             $pmos = $this->pmoRepository->getAll($filters);
             if($pmos->isEmpty()) {
                 return [
-                    'code' => 404,
-                    'success' => false,
+                    'code' => 200,
+                    'success' => true,
                     'message' => 'Tidak ada data PMO'
                 ];
             }
@@ -184,8 +184,8 @@ class PmoService
             $pmos = $this->pmoRepository->getByPatientId($patientId);
             if($pmos->isEmpty()) {
                 return [
-                    'code' => 404,
-                    'success' => false,
+                    'code' => 200,
+                    'success' => true,
                     'message' => 'Tidak ada data PMO'
                 ];
             }
