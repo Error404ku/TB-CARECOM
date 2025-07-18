@@ -114,9 +114,12 @@ class PatientService
             $patients = $this->patientRepository->getAll($filters);
             if ($patients->isEmpty()) {
                 return [
-                    'code' => 404,
-                    'success' => false,
-                    'message' => 'Tidak ada data Patient'
+                    'code' => 200,
+                    'success' => true,
+                    'message' => 'Tidak ada data Patient',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
 
@@ -160,9 +163,12 @@ class PatientService
             $patients = $this->patientRepository->findByAssignedNurseId($assignedNurseId, $filters);
             if ($patients->isEmpty()) {
                 return [
-                    'code' => 404,
-                    'success' => false,
-                    'message' => 'Tidak ada data Patient'
+                    'code' => 200,
+                    'success' => true,
+                    'message' => 'Tidak ada data Patient',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
 
@@ -195,7 +201,7 @@ class PatientService
             return [
                 'code' => 500,
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat memperbarui patient'
+                'message' => 'Terjadi kesalahan saat memperbarui patient'.$e->getMessage()
             ];
         }
     }

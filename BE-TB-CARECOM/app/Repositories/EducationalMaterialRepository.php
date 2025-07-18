@@ -43,7 +43,7 @@ class EducationalMaterialRepository
         $query->orderBy('created_at', 'desc');
 
         $paginator = $query->paginate($filters['per_page'] ?? 10);
-        return $paginator->appends(request()->query());
+        return $paginator->withQueryString();
     }
 
     public function countAll(): int

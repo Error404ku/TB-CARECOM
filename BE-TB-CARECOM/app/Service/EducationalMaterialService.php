@@ -199,9 +199,12 @@ class EducationalMaterialService
             $educationalMaterial = $this->educationalMaterialRepository->getAll($filters);
             if ($educationalMaterial->isEmpty()) {
                 return [
-                    'code' => 404,
-                    'success' => false,
-                    'message' => 'Tidak ada data Educational Material'
+                    'code' => 200,
+                    'success' => true,
+                    'message' => 'Tidak ada data Educational Material',
+                    'data' => null,
+                    'pagination' => null,
+                    'current_filters' => null
                 ];
             }
 
