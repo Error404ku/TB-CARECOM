@@ -351,7 +351,7 @@ export const createUser = (data: any) => {
 };
 
 export const getAllPatients = () => {
-  return privateClient.get('/admin/patients');
+  return privateClient.get('/admin/patient');
 };
 
 export const getPatientById = (id: number) => {

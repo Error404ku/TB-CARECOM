@@ -5,6 +5,7 @@ import { usePMOs } from '../hooks';
 import { type CreatePMORequest, type PMOFilters } from '../types';
 import ModernLayout from '../../../layouts/ModernLayout';
 import Swal from 'sweetalert2';
+import { getAllPatients } from '../../../api/adminApi';
 
 const PMOManagement: React.FC = () => {
   const [searchParams, setSearchParams] = useState<PMOFilters>({
@@ -35,6 +36,16 @@ const PMOManagement: React.FC = () => {
     gender: 'L',
     relationship: ''
   });
+  const [patients, setPatients] = useState<any[]>([]);
+
+  // Fetch patients saat modal tambah dibuka
+  React.useEffect(() => {
+    if (showCreateModal || showEditModal) {
+      getAllPatients().then((res) => {
+        setPatients(res.data.data || []);
+      });
+    }
+  }, [showCreateModal, showEditModal]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -366,15 +377,18 @@ const PMOManagement: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Tambah PMO Baru</h3>
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pasien</label>
+                <select
                   value={formData.patient_id}
                   onChange={(e) => setFormData(prev => ({ ...prev, patient_id: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="ID Pasien"
                   required
-                />
+                >
+                  <option value="">Pilih Pasien</option>
+                  {patients.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} - {p.address}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nama PMO</label>
@@ -446,14 +460,18 @@ const PMOManagement: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit PMO</h3>
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID</label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700 mb-1">Pasien</label>
+                <select
                   value={formData.patient_id}
                   onChange={(e) => setFormData(prev => ({ ...prev, patient_id: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
-                />
+                >
+                  <option value="">Pilih Pasien</option>
+                  {patients.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} - {p.address}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nama PMO</label>

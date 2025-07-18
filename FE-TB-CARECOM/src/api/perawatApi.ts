@@ -150,3 +150,32 @@ export const getPatientById = async (patientId: number) => {
 export const restartTreatmentDate = async (patientId: number) => {
   return privateClient.put(`/perawat/patient/restart-treatment-date/${patientId}`);
 }; 
+
+// Dashboard response types
+export interface PerawatDashboardStats {
+  patient: {
+    active: number;
+    male: number;
+    female: number;
+  };
+}
+
+export interface PerawatDashboardResponse {
+  meta: {
+    code: number;
+    message: string;
+  };
+  data: {
+    code: number;
+    success: boolean;
+    message: string;
+    data: PerawatDashboardStats;
+  };
+}
+
+/**
+ * Get perawat dashboard stats
+ */
+export const getPerawatDashboard = async () => {
+  return privateClient.get<PerawatDashboardResponse>('/perawat/dashboard');
+}; 
