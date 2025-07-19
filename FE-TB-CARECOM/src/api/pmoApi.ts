@@ -132,9 +132,19 @@ export interface UpdateDailyMonitoringResponse {
 export interface UpdatePatientRequest {
   name: string;
   address: string;
-  gender: string;
+  gender: 'P' | 'L'; // P for Perempuan, L for Laki-laki 
   no_telp: string;
   status: 'aktif' | 'sembuh' | 'gagal';
+}
+
+export interface UpdatePatientResponse {
+  meta?: {
+    code: number;
+    message: string;
+  };
+  status?: number;
+  message?: string;
+  data?: any;
 }
 
 export interface QRCodeResponse {
@@ -257,7 +267,7 @@ export const getPatientData = async () => {
  */
 export const updatePatientData = async (data: UpdatePatientRequest) => {
   try {
-    return await privateClient.put('/pmo/patient', data);
+    return await privateClient.put<UpdatePatientResponse>('/pmo/patient', data);
   } catch (error: any) {
     // If API endpoint doesn't exist (404) or unauthorized (401), return error message
     if (error.response?.status === 404 || error.response?.status === 401) {

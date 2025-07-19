@@ -12,6 +12,15 @@ import {
   type UpdateDailyMonitoringRequest,
   type DashboardData
 } from '../api/pmoApi';
+
+// Local interface for UI form (uses full gender names)
+interface UpdatePatientUIRequest {
+  name: string;
+  address: string;
+  gender: 'Perempuan' | 'Laki-laki';
+  no_telp: string;
+  status: 'aktif' | 'sembuh' | 'gagal';
+}
 import { showSuccess, showError, showConfirm } from '../utils/sweetAlert';
 import { useAuth } from '../store/AuthContext';
 import * as QRCode from 'qrcode';
@@ -21,13 +30,22 @@ const DashboardPMO: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('overview');
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [dailyMonitoring, setDailyMonitoring] = useState<DailyMonitoringEntry[]>([]);
+
+  // Helper functions for gender mapping
+  const mapGenderFromAPI = (apiGender: string): 'Perempuan' | 'Laki-laki' => {
+    return apiGender === 'P' ? 'Perempuan' : 'Laki-laki';
+  };
+
+  const mapGenderToAPI = (uiGender: 'Perempuan' | 'Laki-laki'): 'P' | 'L' => {
+    return uiGender === 'Perempuan' ? 'P' : 'L';
+  };
   
   // Edit states
   const [isEditingPatient, setIsEditingPatient] = useState(false);
-  const [editPatientData, setEditPatientData] = useState<UpdatePatientRequest>({
+  const [editPatientData, setEditPatientData] = useState<UpdatePatientUIRequest>({
     name: '',
     address: '',
-    gender: '',
+    gender: 'Laki-laki',
     no_telp: '',
     status: 'aktif'
   });
@@ -82,7 +100,7 @@ const DashboardPMO: React.FC = () => {
         setEditPatientData({
           name: patient.name,
           address: patient.address,
-          gender: patient.gender === 'P' ? 'Perempuan' : 'Laki-laki',
+          gender: mapGenderFromAPI(patient.gender),
           no_telp: patient.no_telp,
           status: patient.status as 'aktif' | 'sembuh' | 'gagal'
         });
@@ -153,11 +171,27 @@ const DashboardPMO: React.FC = () => {
       );
 
       if (result.isConfirmed) {
-        const response = await updatePatientData(editPatientData);
-        if (response.data.status === 200) {
+        // Map UI data to API format
+        const apiData: UpdatePatientRequest = {
+          name: editPatientData.name,
+          address: editPatientData.address,
+          gender: mapGenderToAPI(editPatientData.gender),
+          no_telp: editPatientData.no_telp,
+          status: editPatientData.status
+        };
+        
+        const response = await updatePatientData(apiData);
+        const isSuccess = (response.data as any)?.meta?.code === 200 || (response.data as any)?.status === 200;
+        
+        if (isSuccess) {
           showSuccess('Berhasil!', 'Data pasien berhasil diperbarui.');
           setIsEditingPatient(false);
           reloadDashboardData(); // Reload data
+        } else {
+          const errorMessage = (response.data as any)?.meta?.message || 
+                              (response.data as any)?.message || 
+                              'Terjadi kesalahan saat mengupdate data pasien.';
+          showError('Gagal Update', errorMessage);
         }
       }
     } catch (error) {
@@ -474,7 +508,7 @@ const DashboardPMO: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Kelamin</label>
                     <select
                       value={editPatientData.gender}
-                      onChange={(e) => setEditPatientData({...editPatientData, gender: e.target.value})}
+                      onChange={(e) => setEditPatientData({...editPatientData, gender: e.target.value as 'Perempuan' | 'Laki-laki'})}
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     >
                       <option value="Laki-laki">Laki-laki</option>
