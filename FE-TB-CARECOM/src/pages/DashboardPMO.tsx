@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ModernLayout from '../layouts/ModernLayout';
 import { 
   getPMODashboard,
+  getAllDailyMonitoring,
   updatePatientData, 
   updateDailyMonitoring,
   getPatientQRCode,
@@ -101,13 +102,19 @@ const DashboardPMO: React.FC = () => {
     if (dailyMonitoring.length > 0 || loadingMonitoring) return;
     setLoadingMonitoring(true);
     try {
-      // Note: Import getAllDailyMonitoring when needed for monitoring tab
-      // For now, we'll show a placeholder until user explicitly opens monitoring tab
-      console.warn('Monitoring data disabled for performance');
-      setDailyMonitoring([]);
+      const response = await getAllDailyMonitoring();
+      if (response.data?.meta?.code === 200 && response.data?.data) {
+        setDailyMonitoring(response.data.data);
+      } else if (response.data?.meta?.code === 404 || response.data?.meta?.code === 401) {
+        console.warn('Daily monitoring API issue:', response.data.meta.message);
+        setDailyMonitoring([]);
+      } else {
+        setDailyMonitoring([]);
+      }
     } catch (error) {
       console.error('Error loading monitoring data:', error);
       showError('Gagal Memuat Data', 'Terjadi kesalahan saat memuat data monitoring.');
+      setDailyMonitoring([]);
     } finally {
       setLoadingMonitoring(false);
     }
@@ -168,10 +175,12 @@ const DashboardPMO: React.FC = () => {
 
       if (result.isConfirmed) {
         const response = await updateDailyMonitoring(editMonitoringData);
-        if (response.data.status === 200) {
+        if (response.data?.meta?.code === 200) {
           showSuccess('Berhasil!', 'Data monitoring berhasil diperbarui.');
           setEditingMonitoring(null);
           reloadMonitoringData(); // Reload data
+        } else {
+          showError('Gagal Update', response.data?.meta?.message || 'Terjadi kesalahan saat mengupdate data monitoring.');
         }
       }
     } catch (error) {

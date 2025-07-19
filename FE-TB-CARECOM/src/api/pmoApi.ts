@@ -6,6 +6,8 @@ export interface DailyMonitoringEntry {
   id: number;
   medication_time: string;
   description: string;
+  created_at: string | null;
+  updated_at: string | null;
   patient: {
     id: number;
     name: string;
@@ -101,8 +103,10 @@ export interface DashboardResponse {
 }
 
 export interface DailyMonitoringResponse {
-  status: number;
-  message: string;
+  meta: {
+    code: number;
+    message: string;
+  };
   data: DailyMonitoringEntry[];
 }
 
@@ -115,6 +119,14 @@ export interface PatientResponse {
 export interface UpdateDailyMonitoringRequest {
   medication_time: string;
   description: string;
+}
+
+export interface UpdateDailyMonitoringResponse {
+  meta: {
+    code: number;
+    message: string;
+  };
+  data?: any;
 }
 
 export interface UpdatePatientRequest {
@@ -178,10 +190,12 @@ export const getAllDailyMonitoring = async () => {
       console.warn('PMO daily monitoring API belum tersedia atau tidak diotorisasi');
       return {
         data: {
-          status: error.response.status,
-          message: error.response.status === 404 
-            ? "API daily monitoring belum tersedia. Silakan hubungi administrator."
-            : "API daily monitoring belum tersedia atau akses tidak diotorisasi.",
+          meta: {
+            code: error.response.status,
+            message: error.response.status === 404 
+              ? "API daily monitoring belum tersedia. Silakan hubungi administrator."
+              : "API daily monitoring belum tersedia atau akses tidak diotorisasi."
+          },
           data: []
         }
       };
