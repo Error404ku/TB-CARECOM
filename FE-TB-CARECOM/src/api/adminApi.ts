@@ -58,11 +58,13 @@ export interface UsersResponse {
 
 export interface PMO {
   id: number;
+  patient_id: number;
   name: string;
   gender: string;
   no_telp: string;
   relationship: string;
   patient: {
+    id: number;
     name: string;
     address: string;
     gender: string;
@@ -70,6 +72,7 @@ export interface PMO {
     status: string;
   };
   user: {
+    id: number;
     name: string;
     email: string;
   };

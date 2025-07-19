@@ -32,6 +32,7 @@ import ProfileAdmin from './pages/ProfileAdmin';
 import AdminDashboard from './features/admin/pages/AdminDashboard';
 import UserManagement from './features/admin/pages/UserManagement';
 import PMOManagement from './features/admin/pages/PMOManagement';
+import PMODetail from './features/admin/pages/PMODetail';
 import EducationalMaterials from './features/admin/pages/EducationalMaterials';
 import DailyMonitoringAdmin from './features/admin/pages/DailyMonitoringAdmin';
 
@@ -131,6 +132,12 @@ const App = () => {
             <Route path="/admin/pmo" element={
               <AdminRoute>
                 <PMOManagement />
+              </AdminRoute>
+            } />
+            
+            <Route path="/admin/pmo/:id" element={
+              <AdminRoute>
+                <PMODetail />
               </AdminRoute>
             } />
             
