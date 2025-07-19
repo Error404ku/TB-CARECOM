@@ -117,15 +117,18 @@ export interface PatientResponse {
 }
 
 export interface UpdateDailyMonitoringRequest {
+  id?: number; // Optional ID for identifying which record to update
   medication_time: string;
   description: string;
 }
 
 export interface UpdateDailyMonitoringResponse {
-  meta: {
+  meta?: {
     code: number;
     message: string;
   };
+  status?: number;
+  message?: string;
   data?: any;
 }
 
@@ -219,7 +222,7 @@ export const getAllDailyMonitoring = async () => {
  */
 export const updateDailyMonitoring = async (data: UpdateDailyMonitoringRequest) => {
   try {
-    return await privateClient.put('/pmo/daily-monitoring', data);
+    return await privateClient.put<UpdateDailyMonitoringResponse>('/pmo/daily-monitoring', data);
   } catch (error: any) {
     // If API endpoint doesn't exist (404) or unauthorized (401), return error message
     if (error.response?.status === 404 || error.response?.status === 401) {

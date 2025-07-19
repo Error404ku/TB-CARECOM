@@ -184,6 +184,8 @@ const DashboardPMO: React.FC = () => {
         const isSuccess = (response.data as any)?.meta?.code === 200 || (response.data as any)?.status === 200;
         
         if (isSuccess) {
+          // reload halaman 
+          window.location.reload();
           showSuccess('Berhasil!', 'Data pasien berhasil diperbarui.');
           setIsEditingPatient(false);
           reloadDashboardData(); // Reload data
@@ -201,6 +203,8 @@ const DashboardPMO: React.FC = () => {
   };
 
   const handleUpdateMonitoring = async () => {
+    if (!editingMonitoring) return;
+    
     try {
       const result = await showConfirm(
         'Update Data Monitoring',
@@ -208,13 +212,35 @@ const DashboardPMO: React.FC = () => {
       );
 
       if (result.isConfirmed) {
-        const response = await updateDailyMonitoring(editMonitoringData);
-        if (response.data?.meta?.code === 200) {
+        // Prepare request data according to API specification
+        const requestData: UpdateDailyMonitoringRequest = {
+          id: editingMonitoring.id, // Include ID for identifying which record to update
+          medication_time: editMonitoringData.medication_time,
+          description: editMonitoringData.description
+        };
+
+        const response = await updateDailyMonitoring(requestData);
+        
+        // Handle both response formats (meta and status) with type casting
+        const responseData = response.data as any;
+        const isSuccess = responseData?.meta?.code === 200 || 
+                         responseData?.status === 200 ||
+                         (response as any)?.status === 200;
+        
+        if (isSuccess) {
           showSuccess('Berhasil!', 'Data monitoring berhasil diperbarui.');
           setEditingMonitoring(null);
           reloadMonitoringData(); // Reload data
+          
+          // Optional: reload page after successful update
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
         } else {
-          showError('Gagal Update', response.data?.meta?.message || 'Terjadi kesalahan saat mengupdate data monitoring.');
+          const errorMessage = responseData?.meta?.message || 
+                              responseData?.message || 
+                              'Terjadi kesalahan saat mengupdate data monitoring.';
+          showError('Gagal Update', errorMessage);
         }
       }
     } catch (error) {
