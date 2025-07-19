@@ -184,11 +184,16 @@ const responseInterceptor = {
           } else {
             // For public endpoints, show different message
             Swal.fire({
-              icon: 'error',
-              title: 'Login Gagal',
-              text: data.message || 'Email atau password salah.',
-              confirmButtonColor: '#ef4444',
-              confirmButtonText: 'OK'
+              icon: 'warning',
+              title: 'Sesi Berakhir',
+              text: 'Sesi login Anda telah berakhir. Silakan login kembali.',
+              confirmButtonColor: '#f59e0b',
+              confirmButtonText: 'Login'
+            }).then(() => {
+              // timeout 1000ms
+              setTimeout(() => {
+                window.location.href = '/login';
+              }, 3000);
             });
           }
           break;
