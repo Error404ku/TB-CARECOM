@@ -2,9 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getPMOById, getDailyMonitoringByPatientIdAdmin } from '../../../api/adminApi';
-import { type PMO, type DailyMonitoringAdmin } from '../../../api/adminApi';
+import { type PMO } from '../../../api/adminApi';
 import ModernLayout from '../../../layouts/ModernLayout';
-import Swal from 'sweetalert2';
 
 const PMODetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
