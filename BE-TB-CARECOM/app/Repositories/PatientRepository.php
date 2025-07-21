@@ -133,7 +133,7 @@ class PatientRepository
     public function countPatientActive()
     {
         return $this->model
-            ->where('status', 'aktif')
+            ->whereRaw('LOWER(status) LIKE ?', ['%aktif%'])
             ->where('assigned_nurse_id', Auth::user()->id)
             ->count();
     }
