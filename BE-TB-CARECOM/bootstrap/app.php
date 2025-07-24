@@ -25,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'http://example.com/foo/*',
         ]);
 
+        // Add CORS middleware
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
     })->create();
