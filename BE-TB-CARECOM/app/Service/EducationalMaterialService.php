@@ -77,7 +77,8 @@ class EducationalMaterialService
                         'quality' => 'auto',
                         'fetch_format' => 'auto',
                         'compression' => 'low',
-                    ]
+                    ],
+                    'resource_type' => 'raw'
                 ]);
                 if (!$uploadResult) {
                     return [
