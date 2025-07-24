@@ -18,10 +18,15 @@ class EducationalMaterialService
             $fileExtension = strtolower($data['file']->getClientOriginalExtension());
             $resourceType = $fileExtension === 'pdf' ? 'raw' : 'auto';
             
+            // Generate unique filename dengan ekstensi
+            $originalName = pathinfo($data['file']->getClientOriginalName(), PATHINFO_FILENAME);
+            $uniqueFilename = $originalName . '_' . time() . '.' . $fileExtension;
+            
             // Konfigurasi upload berdasarkan tipe file
             $uploadOptions = [
                 'folder' => 'TB_CareCom/educational_materials',
-                'resource_type' => $resourceType
+                'resource_type' => $resourceType,
+                'public_id' => 'TB_CareCom/educational_materials/' . $uniqueFilename
             ];
             
             // Tambahkan transformation hanya untuk file non-PDF
@@ -87,10 +92,15 @@ class EducationalMaterialService
                     $fileExtension = strtolower($data['file']->getClientOriginalExtension());
                     $resourceType = $fileExtension === 'pdf' ? 'raw' : 'auto';
                     
+                    // Generate unique filename dengan ekstensi
+                    $originalName = pathinfo($data['file']->getClientOriginalName(), PATHINFO_FILENAME);
+                    $uniqueFilename = $originalName . '_' . time() . '.' . $fileExtension;
+                    
                     // Konfigurasi upload berdasarkan tipe file
                     $uploadOptions = [
                         'folder' => 'TB_CareCom/educational_materials',
-                        'resource_type' => $resourceType
+                        'resource_type' => $resourceType,
+                        'public_id' => 'TB_CareCom/educational_materials/' . $uniqueFilename
                     ];
                     
                     // Tambahkan transformation hanya untuk file non-PDF
