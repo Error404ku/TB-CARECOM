@@ -11,6 +11,50 @@ class EducationalMaterialService
         private EducationalMaterialRepository $educationalMaterialRepository,
     ) {}
 
+    public function createYoutubeLink(array $data)
+    {
+        try {
+            $educationalMaterial = $this->educationalMaterialRepository->create($data);
+            return [
+                'success' => true,
+                'message' => 'Educational Material berhasil dibuat',
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            return [
+                'code' => 500,
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat membuat Educational Material'
+            ];
+        }
+    }
+
+    public function updateYoutubeLink(int $id, array $data): array
+    {
+        $educationalMaterial = $this->educationalMaterialRepository->findById($id);
+        if (!$educationalMaterial) {
+            return [
+                'code' => 404,
+                'success' => false,
+                'message' => 'Educational Material tidak ditemukan'
+            ];
+        }
+        try {
+            $educationalMaterial = $this->educationalMaterialRepository->update($educationalMaterial, $data);
+            return [
+                'success' => true,
+                'message' => 'Educational Material berhasil diupdate',
+                'data' => null
+            ];
+        } catch (\Exception $e) {
+            return [
+                'code' => 500,
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupdate Educational Material'
+            ];
+        }
+    }
+
     public function create(array $data)
     {
         try {

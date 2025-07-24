@@ -82,7 +82,9 @@ Route::middleware(['auth:api', 'jwt.verify'])->group(function () {
 
             Route::prefix('educational-material')->group(function () {
                 Route::post('/', [EducationalMaterialController::class, 'createEducationMaterial']);
+                Route::post('/tautan', [EducationalMaterialController::class, 'createEducationMaterialYT']);
                 Route::post('/{id}', [EducationalMaterialController::class, 'update']);
+                Route::put('/tautan/{id}', [EducationalMaterialController::class, 'updateEducationMaterialYT']);
                 Route::delete('/{id}', [EducationalMaterialController::class, 'delete']);
             });
 

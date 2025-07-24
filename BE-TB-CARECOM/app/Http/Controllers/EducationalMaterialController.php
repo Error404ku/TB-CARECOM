@@ -8,6 +8,7 @@ use Illuminate\Database\QueryException;
 use App\Service\EducationalMaterialService;
 use App\Http\Requests\EducationMaterial\UpdateRequest;
 use App\Http\Requests\EducationMaterial\CreateEducationMaterial;
+use App\Http\Requests\EducationMaterial\CreateEducationMaterialYT;
 
 class EducationalMaterialController extends Controller
 {
@@ -40,6 +41,26 @@ class EducationalMaterialController extends Controller
         }
 
         return $this->success($result['message'], 200, $result['data']);
+    }
+
+    public function createEducationMaterialYT(CreateEducationMaterialYT $request)
+    {
+        $educationalMaterial = $this->educationalMaterialService->createYoutubeLink($request->validated());
+        if (!$educationalMaterial['success']) {
+            return $this->error($educationalMaterial['message'], $educationalMaterial['code'], null);
+        }
+
+        return $this->success($educationalMaterial['message'], 201, $educationalMaterial['data']);
+    }
+
+    public function updateEducationMaterialYT(int $id, CreateEducationMaterialYT $request)
+    {
+        $educationalMaterial = $this->educationalMaterialService->updateYoutubeLink($id, $request->validated());
+        if (!$educationalMaterial['success']) {
+            return $this->error($educationalMaterial['message'], $educationalMaterial['code'], null);
+        }
+
+        return $this->success($educationalMaterial['message'], 201, $educationalMaterial['data']);
     }
 
     public function createEducationMaterial(CreateEducationMaterial $request)
