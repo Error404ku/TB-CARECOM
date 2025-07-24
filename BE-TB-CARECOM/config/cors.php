@@ -17,11 +17,7 @@ return [
 
     'paths' => ['api/*'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => [
-        'https://tbcarecom.experienceroleplay.online',
-        'http://localhost:3000',
-        'http://127.0.0.1:3000'
-    ],
+    'allowed_origins' => ['*'],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
