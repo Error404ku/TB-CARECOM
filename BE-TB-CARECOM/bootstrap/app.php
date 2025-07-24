@@ -19,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'jwt.verify' => \App\Http\Middleware\JWTMiddleware::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'stripe/*',
+            'http://example.com/foo/bar',
+            'http://example.com/foo/*',
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
     })->create();
