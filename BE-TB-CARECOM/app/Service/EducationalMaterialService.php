@@ -18,15 +18,22 @@ class EducationalMaterialService
             $fileExtension = strtolower($data['file']->getClientOriginalExtension());
             $resourceType = $fileExtension === 'pdf' ? 'raw' : 'auto';
             
-            $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
+            // Konfigurasi upload berdasarkan tipe file
+            $uploadOptions = [
                 'folder' => 'TB_CareCom/educational_materials',
-                'transformation' => [
+                'resource_type' => $resourceType
+            ];
+            
+            // Tambahkan transformation hanya untuk file non-PDF
+            if ($resourceType !== 'raw') {
+                $uploadOptions['transformation'] = [
                     'quality' => 'auto',
                     'fetch_format' => 'auto',
                     'compression' => 'low',
-                ],
-                'resource_type' => $resourceType
-            ]);
+                ];
+            }
+            
+            $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), $uploadOptions);
             if (!$uploadResult) {
                 return [
                     'code' => 500,
@@ -79,16 +86,23 @@ class EducationalMaterialService
                     // Tentukan resource type berdasarkan ekstensi file
                     $fileExtension = strtolower($data['file']->getClientOriginalExtension());
                     $resourceType = $fileExtension === 'pdf' ? 'raw' : 'auto';
+                    
+                    // Konfigurasi upload berdasarkan tipe file
+                    $uploadOptions = [
+                        'folder' => 'TB_CareCom/educational_materials',
+                        'resource_type' => $resourceType
+                    ];
+                    
+                    // Tambahkan transformation hanya untuk file non-PDF
+                    if ($resourceType !== 'raw') {
+                        $uploadOptions['transformation'] = [
+                            'quality' => 'auto',
+                            'fetch_format' => 'auto',
+                            'compression' => 'low',
+                        ];
+                    }
                 }
-                $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
-                    'folder' => 'TB_CareCom/educational_materials',
-                    'transformation' => [
-                        'quality' => 'auto',
-                        'fetch_format' => 'auto',
-                        'compression' => 'low',
-                    ],
-                    'resource_type' => $resourceType
-                ]);
+                $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), $uploadOptions);
                 if (!$uploadResult) {
                     return [
                         'code' => 500,
