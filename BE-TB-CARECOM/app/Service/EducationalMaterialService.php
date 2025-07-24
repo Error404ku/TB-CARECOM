@@ -21,7 +21,7 @@ class EducationalMaterialService
                     'fetch_format' => 'auto',
                     'compression' => 'low',
                 ],
-                'resource_type' => 'raw'
+                'resource_type' => 'auto'
             ]);
             if (!$uploadResult) {
                 return [
@@ -78,7 +78,7 @@ class EducationalMaterialService
                         'fetch_format' => 'auto',
                         'compression' => 'low',
                     ],
-                    'resource_type' => 'raw'
+                    'resource_type' => 'auto'
                 ]);
                 if (!$uploadResult) {
                     return [
