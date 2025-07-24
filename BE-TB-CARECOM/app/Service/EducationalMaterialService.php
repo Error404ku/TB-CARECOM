@@ -20,7 +20,8 @@ class EducationalMaterialService
                     'quality' => 'auto',
                     'fetch_format' => 'auto',
                     'compression' => 'low',
-                ]
+                ],
+                'resource_type' => 'raw'
             ]);
             if (!$uploadResult) {
                 return [
@@ -89,7 +90,7 @@ class EducationalMaterialService
                 $data['url_file'] = $uploadResult['secure_url'];
                 $data['public_id'] = $uploadResult['public_id'];
             }
-            
+
             $educationalMaterialUpdated = $this->educationalMaterialRepository->update($educationalMaterial, $data);
             if (!$educationalMaterialUpdated) {
                 if ($data['public_id']) {
