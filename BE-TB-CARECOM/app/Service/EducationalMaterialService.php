@@ -14,6 +14,10 @@ class EducationalMaterialService
     public function create(array $data)
     {
         try {
+            // Tentukan resource type berdasarkan ekstensi file
+            $fileExtension = strtolower($data['file']->getClientOriginalExtension());
+            $resourceType = $fileExtension === 'pdf' ? 'raw' : 'auto';
+            
             $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
                 'folder' => 'TB_CareCom/educational_materials',
                 'transformation' => [
@@ -21,7 +25,7 @@ class EducationalMaterialService
                     'fetch_format' => 'auto',
                     'compression' => 'low',
                 ],
-                'resource_type' => 'auto'
+                'resource_type' => $resourceType
             ]);
             if (!$uploadResult) {
                 return [
@@ -71,6 +75,11 @@ class EducationalMaterialService
         }
         try {
             if (isset($data['file'])) {
+                if ($data['file']) {
+                    // Tentukan resource type berdasarkan ekstensi file
+                    $fileExtension = strtolower($data['file']->getClientOriginalExtension());
+                    $resourceType = $fileExtension === 'pdf' ? 'raw' : 'auto';
+                }
                 $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
                     'folder' => 'TB_CareCom/educational_materials',
                     'transformation' => [
@@ -78,7 +87,7 @@ class EducationalMaterialService
                         'fetch_format' => 'auto',
                         'compression' => 'low',
                     ],
-                    'resource_type' => 'auto'
+                    'resource_type' => $resourceType
                 ]);
                 if (!$uploadResult) {
                     return [
