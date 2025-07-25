@@ -4,6 +4,101 @@ import { useEducationalMaterials, useEducationPagination } from '../features/edu
 import type { EducationalMaterial } from '../features/education/types';
 import LoadingOverlay from '../components/LoadingOverlay';
 
+// Helper functions for file handling
+const getFileExtension = (url: string) => {
+  if (!url) return '';
+  // Handle Cloudinary URLs and other cloud storage URLs
+  const match = url.match(/\.([a-zA-Z0-9]+)(?:\?|#|$)/);
+  if (match) return match[1].toLowerCase();
+  return '';
+};
+
+const isYouTubeUrl = (url: string) => {
+  return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\//.test(url);
+};
+
+const getYouTubeEmbedUrl = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? `https://www.youtube.com/embed/${match[2]}` : '';
+};
+
+// Helper function to get PDF URL for files without extension
+const getPdfUrl = (url_file: string, public_id: string) => {
+  const ext = getFileExtension(url_file);
+  if (ext === '' && url_file && !isYouTubeUrl(url_file)) {
+    // If no extension and it's a file (not YouTube), assume it's PDF
+    // Handle Cloudinary URLs specifically
+    if (url_file.includes('cloudinary.com') || url_file.includes('TB_CareCom')) {
+      return url_file.endsWith('.pdf') ? url_file : `${url_file}.pdf`;
+    }
+    return url_file.endsWith('.pdf') ? url_file : `${url_file}.pdf`;
+  }
+  return url_file;
+};
+
+// Helper function to render file preview
+const renderFilePreview = (material: EducationalMaterial) => {
+  const { url_file, public_id, title } = material;
+  
+  if (isYouTubeUrl(url_file)) {
+    return (
+      <iframe
+        src={getYouTubeEmbedUrl(url_file)}
+        title="YouTube Video"
+        className="w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+  
+  const ext = getFileExtension(url_file);
+  console.log('File extension:', ext, 'URL:', url_file); // Debug log
+  
+  if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) {
+    return (
+      <img
+        src={url_file}
+        alt={title}
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+        }}
+      />
+    );
+  } else if (ext === "pdf" || ext === "") {
+    const pdfUrl = getPdfUrl(url_file, public_id);
+    console.log('PDF URL:', pdfUrl); // Debug log
+    return (
+      <div className="w-full h-full flex flex-col">
+        <iframe 
+          src={pdfUrl} 
+          title="PDF Preview" 
+          className="w-full flex-1"
+          onError={() => console.log('PDF iframe error')}
+        />
+        <div className="p-2 bg-gray-50 text-xs text-gray-600 text-center">
+          PDF Preview - <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Buka di tab baru</a>
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <a 
+          href={url_file} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-blue-600 underline text-lg"
+        >
+          Lihat File ({ext || 'unknown'})
+        </a>
+      </div>
+    );
+  }
+};
+
 const Edukasi: React.FC = () => {
   const { filters, currentPage, search, handleSearch, setCurrentPage } = useEducationPagination();
   const { data, loading, error, refetch } = useEducationalMaterials(filters);
@@ -288,11 +383,7 @@ const Edukasi: React.FC = () => {
               <div className="space-y-6">
                 {selectedMaterial.url_file && (
                   <div className="w-full h-64 bg-gray-100 rounded-2xl overflow-hidden">
-                    <img
-                      src={selectedMaterial.url_file}
-                      alt={selectedMaterial.title}
-                      className="w-full h-full object-cover"
-                    />
+                    {renderFilePreview(selectedMaterial)}
                   </div>
                 )}
                 
