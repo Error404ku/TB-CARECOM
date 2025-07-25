@@ -41,7 +41,7 @@ const getPdfUrl = (url_file: string) => {
 
 // Helper function to render file preview
 const renderFilePreview = (material: EducationalMaterial) => {
-  const { url_file, public_id, title } = material;
+  const { url_file, title } = material;
   
   if (isYouTubeUrl(url_file)) {
     return (
