@@ -26,7 +26,7 @@ const getYouTubeEmbedUrl = (url: string) => {
 };
 
 // Helper function to get PDF URL for files without extension
-const getPdfUrl = (url_file: string, public_id: string) => {
+const getPdfUrl = (url_file: string) => {
   const ext = getFileExtension(url_file);
   if (ext === '' && url_file && !isYouTubeUrl(url_file)) {
     // If no extension and it's a file (not YouTube), assume it's PDF
@@ -67,7 +67,7 @@ const renderFilePreview = (material: EducationalMaterial) => {
       />
     );
   } else if (ext === "pdf" || ext === "") {
-    const pdfUrl = getPdfUrl(url_file, public_id);
+    const pdfUrl = getPdfUrl(url_file);
     console.log('PDF URL:', pdfUrl); // Debug log
     return (
       <div className="w-full h-full flex flex-col">
