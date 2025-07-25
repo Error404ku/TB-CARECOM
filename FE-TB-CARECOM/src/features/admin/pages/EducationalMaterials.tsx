@@ -26,20 +26,6 @@ const getYouTubeEmbedUrl = (url: string) => {
   return match && match[2].length === 11 ? `https://www.youtube.com/embed/${match[2]}` : '';
 };
 
-// Helper function to get PDF URL for files without extension
-const getPdfUrl = (url_file: string) => {
-  const ext = getFileExtension(url_file);
-  if (ext === '' && url_file && !isYouTubeUrl(url_file)) {
-    // If no extension and it's a file (not YouTube), assume it's PDF
-    // Handle Cloudinary URLs specifically
-    if (url_file.includes('cloudinary.com') || url_file.includes('TB_CareCom')) {
-      return url_file.endsWith('.pdf') ? url_file : `${url_file}.pdf`;
-    }
-    return url_file.endsWith('.pdf') ? url_file : `${url_file}.pdf`;
-  }
-  return url_file;
-};
-
 // Helper function to render file preview
 const renderFilePreview = (material: EducationalMaterial) => {
   const { url_file, title } = material;
