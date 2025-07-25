@@ -5,6 +5,7 @@ import { useEducationalMaterialsAdmin } from '../hooks';
 import type { EducationalMaterial } from '../../education/types';
 import ModernLayout from '../../../layouts/ModernLayout';
 import LoadingOverlay from '../../../components/LoadingOverlay';
+import { extractYouTubeId } from '../../../pages/Edukasi';
 import Swal from 'sweetalert2';
 
 const getFileExtension = (url: string) => {
@@ -42,7 +43,7 @@ const getPdfUrl = (url_file: string) => {
 // Helper function to render file preview
 const renderFilePreview = (material: EducationalMaterial) => {
   const { url_file, title } = material;
-  
+
   if (isYouTubeUrl(url_file)) {
     return (
       <iframe
@@ -54,10 +55,10 @@ const renderFilePreview = (material: EducationalMaterial) => {
       />
     );
   }
-  
+
   const ext = getFileExtension(url_file);
   console.log('File extension:', ext, 'URL:', url_file); // Debug log
-  
+
   if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) {
     return (
       <img
@@ -67,28 +68,26 @@ const renderFilePreview = (material: EducationalMaterial) => {
       />
     );
   } else if (ext === "pdf" || ext === "") {
-    const pdfUrl = getPdfUrl(url_file);
-    console.log('PDF URL:', pdfUrl); // Debug log
     return (
       <div className="w-full h-full flex flex-col">
-        <iframe 
-          src={pdfUrl} 
-          title="PDF Preview" 
+        <iframe
+          src={url_file}
+          title="PDF Preview"
           className="w-full flex-1"
           onError={() => console.log('PDF iframe error')}
         />
         <div className="p-2 bg-gray-50 text-xs text-gray-600 text-center">
-          PDF Preview - <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Buka di tab baru</a>
+          {/* PDF Preview - <a href={url_file} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Buka di tab baru</a> */}
         </div>
       </div>
     );
   } else {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <a 
-          href={url_file} 
-          target="_blank" 
-          rel="noopener noreferrer" 
+        <a
+          href={url_file}
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-blue-600 underline text-lg"
         >
           Lihat File ({ext || 'unknown'})
@@ -105,7 +104,7 @@ const EducationalMaterials: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'title' | 'created_at' | 'updated_at'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  
+
   // Create filters object with useMemo to prevent unnecessary re-renders
   const filters = useMemo(() => ({
     page: currentPage,
@@ -116,12 +115,12 @@ const EducationalMaterials: React.FC = () => {
   }), [currentPage, perPage, searchTerm, sortBy, sortOrder]);
 
   const { materials, loading, error, createMaterial, updateMaterial, deleteMaterial, refetch, pagination } = useEducationalMaterialsAdmin();
-  
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<EducationalMaterial | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -208,19 +207,19 @@ const EducationalMaterials: React.FC = () => {
     if (!pagination) return [];
     const totalPages = pagination.total_pages;
     const pages = [];
-    
+
     // Show max 5 pages
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, startPage + 4);
-    
+
     if (endPage - startPage < 4) {
       startPage = Math.max(1, endPage - 4);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   };
 
@@ -386,10 +385,10 @@ const EducationalMaterials: React.FC = () => {
   return (
     <ModernLayout title="Manajemen Materi Edukasi" subtitle="Kelola konten edukasi TB untuk semua role">
       {loading && <LoadingOverlay show={loading} />}
-      
+
       {/* Back Button */}
       <div className="mb-6">
-        <Link 
+        <Link
           to="/admin/dashboard"
           className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white/80 backdrop-blur-sm border border-gray-300 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all duration-200"
         >
@@ -506,7 +505,7 @@ const EducationalMaterials: React.FC = () => {
               (Halaman {currentPage} dari {pagination.total_pages})
             </span>
           </div>
-          
+
           {searchTerm && (
             <button
               onClick={handleClearSearch}
@@ -565,16 +564,28 @@ const EducationalMaterials: React.FC = () => {
                   <tr key={material.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        {material.url_file && (
-                          <img
-                            src={material.url_file}
-                            alt={material.title}
-                            className="w-12 h-12 rounded-lg object-cover mr-4"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        )}
+                        {isYouTubeUrl(material.url_file)
+                          ? (
+                            <img
+                              src={`https://img.youtube.com/vi/${extractYouTubeId(material.url_file)}/hqdefault.jpg`}
+                              alt={material.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )
+                          : material.url_file && (
+                            <img
+                              src={material.url_file}
+                              alt={material.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )
+                        }
                         <div>
                           <div className="text-sm font-medium text-gray-900">{material.title}</div>
                           <div className="text-sm text-gray-500">ID: {material.id}</div>
@@ -674,16 +685,15 @@ const EducationalMaterials: React.FC = () => {
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    page === currentPage
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${page === currentPage
                       ? 'bg-purple-600 text-white shadow-lg'
                       : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   {page}
                 </button>
               ))}
-              
+
               {pagination.total_pages > 5 && currentPage < pagination.total_pages - 2 && (
                 <>
                   <span className="px-2 text-gray-500">...</span>
@@ -961,12 +971,12 @@ const EducationalMaterials: React.FC = () => {
                     {renderFilePreview(selectedMaterial)}
                   </div>
                 )}
-                
+
                 <div>
                   <h4 className="text-xl font-bold text-gray-800 mb-2">{selectedMaterial.title}</h4>
                   <p className="text-gray-600 whitespace-pre-wrap">{selectedMaterial.content}</p>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                   <div>
                     <p className="text-sm text-gray-500">ID: {selectedMaterial.id}</p>
@@ -979,7 +989,7 @@ const EducationalMaterials: React.FC = () => {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end space-x-4 pt-4">
                   <button
                     onClick={() => openEditModal(selectedMaterial)}
@@ -993,6 +1003,15 @@ const EducationalMaterials: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+                      download={(() => {
+                        const ext = getFileExtension(selectedMaterial.url_file);
+                        if (ext === '') {
+                          const parts = selectedMaterial.url_file.split('/');
+                          const base = parts[parts.length - 1];
+                          return base + '.pdf';
+                        }
+                        return undefined;
+                      })()}
                     >
                       Lihat File
                     </a>
