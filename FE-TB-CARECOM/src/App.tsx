@@ -11,6 +11,8 @@ import { setLoadingHandlers } from './api/client';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Edukasi from './pages/Edukasi';
 import FormLaporan from './pages/FormLaporan';
 import RiwayatLaporan from './pages/RiwayatLaporan';
@@ -65,6 +67,8 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/edukasi" element={<Edukasi />} />
             
             {/* Public Barcode Scanning */}
