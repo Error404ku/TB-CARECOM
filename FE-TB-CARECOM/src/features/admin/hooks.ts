@@ -32,7 +32,9 @@ import {
   getEducationalMaterialById,
   createEducationalMaterial as createEducation,
   updateEducationalMaterial as updateEducation,
-  deleteEducationalMaterial as deleteEducation
+  deleteEducationalMaterial as deleteEducation,
+  createEducationalMaterialYT,
+  updateEducationalMaterialYT
 } from '../../api/educationApi';
 
 import type {
@@ -288,10 +290,18 @@ export const useEducationalMaterialsAdmin = () => {
     }
   };
 
-  const createMaterial = async (data: CreateEducationalMaterialRequest) => {
+  const createMaterial = async (data: CreateEducationalMaterialRequest, mode: 'file' | 'tautan' = 'file') => {
     try {
       setError(null);
-      await createEducation(data);
+      if (mode === 'tautan') {
+        await createEducationalMaterialYT({
+          title: data.title,
+          content: data.content,
+          url_file: data.url_file || ''
+        });
+      } else {
+        await createEducation(data);
+      }
       return true;
     } catch (err: any) {
       setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat membuat materi edukasi');
@@ -299,10 +309,18 @@ export const useEducationalMaterialsAdmin = () => {
     }
   };
 
-  const updateMaterial = async (id: number, data: UpdateEducationalMaterialRequest) => {
+  const updateMaterial = async (id: number, data: UpdateEducationalMaterialRequest, mode: 'file' | 'tautan' = 'file') => {
     try {
       setError(null);
-      await updateEducation(id, data);
+      if (mode === 'tautan') {
+        await updateEducationalMaterialYT(id, {
+          title: data.title,
+          content: data.content,
+          url_file: data.url_file || ''
+        });
+      } else {
+        await updateEducation(id, data);
+      }
       return true;
     } catch (err: any) {
       setError(err.response?.data?.meta?.message || 'Terjadi kesalahan saat mengupdate materi edukasi');

@@ -1,11 +1,87 @@
 // features/admin/pages/EducationalMaterials.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useEducationalMaterialsAdmin } from '../hooks';
 import type { EducationalMaterial } from '../../education/types';
 import ModernLayout from '../../../layouts/ModernLayout';
 import LoadingOverlay from '../../../components/LoadingOverlay';
+import { extractYouTubeId } from '../../../pages/Edukasi';
 import Swal from 'sweetalert2';
+
+const getFileExtension = (url: string) => {
+  if (!url) return '';
+  // Handle Cloudinary URLs and other cloud storage URLs
+  const match = url.match(/\.([a-zA-Z0-9]+)(?:\?|#|$)/);
+  if (match) return match[1].toLowerCase();
+  return '';
+};
+
+const isYouTubeUrl = (url: string) => {
+  return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\//.test(url);
+};
+
+const getYouTubeEmbedUrl = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? `https://www.youtube.com/embed/${match[2]}` : '';
+};
+
+// Helper function to render file preview
+const renderFilePreview = (material: EducationalMaterial) => {
+  const { url_file, title } = material;
+
+  if (isYouTubeUrl(url_file)) {
+    return (
+      <iframe
+        src={getYouTubeEmbedUrl(url_file)}
+        title="YouTube Video"
+        className="w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  const ext = getFileExtension(url_file);
+  console.log('File extension:', ext, 'URL:', url_file); // Debug log
+
+  if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) {
+    return (
+      <img
+        src={url_file}
+        alt={title}
+        className="w-full h-full object-cover"
+      />
+    );
+  } else if (ext === "pdf" || ext === "") {
+    return (
+      <div className="w-full h-full flex flex-col">
+        <iframe
+          src={url_file}
+          title="PDF Preview"
+          className="w-full flex-1"
+          onError={() => console.log('PDF iframe error')}
+        />
+        <div className="p-2 bg-gray-50 text-xs text-gray-600 text-center">
+          {/* PDF Preview - <a href={url_file} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Buka di tab baru</a> */}
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <a
+          href={url_file}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 underline text-lg"
+        >
+          Lihat File ({ext || 'unknown'})
+        </a>
+      </div>
+    );
+  }
+};
 
 const EducationalMaterials: React.FC = () => {
   // Pagination and filtering state
@@ -14,7 +90,7 @@ const EducationalMaterials: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'title' | 'created_at' | 'updated_at'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  
+
   // Create filters object with useMemo to prevent unnecessary re-renders
   const filters = useMemo(() => ({
     page: currentPage,
@@ -25,12 +101,12 @@ const EducationalMaterials: React.FC = () => {
   }), [currentPage, perPage, searchTerm, sortBy, sortOrder]);
 
   const { materials, loading, error, createMaterial, updateMaterial, deleteMaterial, refetch, pagination } = useEducationalMaterialsAdmin();
-  
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<EducationalMaterial | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -38,6 +114,14 @@ const EducationalMaterials: React.FC = () => {
     public_id: '',
     url_file: ''
   });
+
+  // Tambahkan state untuk tab
+  const [activeTab, setActiveTab] = useState<'file' | 'tautan'>('file');
+
+  // Reset tab saat modal dibuka/tutup
+  useEffect(() => {
+    if (!showCreateModal && !showEditModal) setActiveTab('file');
+  }, [showCreateModal, showEditModal]);
 
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
@@ -109,19 +193,19 @@ const EducationalMaterials: React.FC = () => {
     if (!pagination) return [];
     const totalPages = pagination.total_pages;
     const pages = [];
-    
+
     // Show max 5 pages
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, startPage + 4);
-    
+
     if (endPage - startPage < 4) {
       startPage = Math.max(1, endPage - 4);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   };
 
@@ -139,18 +223,27 @@ const EducationalMaterials: React.FC = () => {
   // Handle create material
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await createMaterial({
-      title: formData.title,
-      content: formData.content,
-      file: formData.file || undefined,
-      public_id: formData.public_id || undefined,
-      url_file: formData.url_file || undefined
-    });
-
+    let success = false;
+    if (activeTab === 'tautan') {
+      // Kirim ke endpoint tautan
+      success = await createMaterial({
+        title: formData.title,
+        content: formData.content,
+        url_file: formData.url_file
+      }, 'tautan');
+    } else {
+      // Kirim ke endpoint file
+      success = await createMaterial({
+        title: formData.title,
+        content: formData.content,
+        file: formData.file || undefined,
+        public_id: formData.public_id || undefined,
+        url_file: undefined
+      }, 'file');
+    }
     if (success) {
       setShowCreateModal(false);
       resetForm();
-      // Refresh the list after creating
       refetch(filters);
       await Swal.fire({
         icon: 'success',
@@ -172,20 +265,26 @@ const EducationalMaterials: React.FC = () => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMaterial) return;
-
-    const success = await updateMaterial(selectedMaterial.id, {
-      title: formData.title,
-      content: formData.content,
-      file: formData.file || undefined,
-      public_id: formData.public_id || undefined,
-      url_file: formData.url_file || undefined
-    });
-
+    let success = false;
+    if (activeTab === 'tautan') {
+      success = await updateMaterial(selectedMaterial.id, {
+        title: formData.title,
+        content: formData.content,
+        url_file: formData.url_file
+      }, 'tautan');
+    } else {
+      success = await updateMaterial(selectedMaterial.id, {
+        title: formData.title,
+        content: formData.content,
+        file: formData.file || undefined,
+        public_id: formData.public_id || undefined,
+        url_file: undefined
+      }, 'file');
+    }
     if (success) {
       setShowEditModal(false);
       setSelectedMaterial(null);
       resetForm();
-      // Refresh the list after updating
       refetch(filters);
       await Swal.fire({
         icon: 'success',
@@ -272,10 +371,10 @@ const EducationalMaterials: React.FC = () => {
   return (
     <ModernLayout title="Manajemen Materi Edukasi" subtitle="Kelola konten edukasi TB untuk semua role">
       {loading && <LoadingOverlay show={loading} />}
-      
+
       {/* Back Button */}
       <div className="mb-6">
-        <Link 
+        <Link
           to="/admin/dashboard"
           className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white/80 backdrop-blur-sm border border-gray-300 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all duration-200"
         >
@@ -392,7 +491,7 @@ const EducationalMaterials: React.FC = () => {
               (Halaman {currentPage} dari {pagination.total_pages})
             </span>
           </div>
-          
+
           {searchTerm && (
             <button
               onClick={handleClearSearch}
@@ -451,16 +550,28 @@ const EducationalMaterials: React.FC = () => {
                   <tr key={material.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        {material.url_file && (
-                          <img
-                            src={material.url_file}
-                            alt={material.title}
-                            className="w-12 h-12 rounded-lg object-cover mr-4"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        )}
+                        {isYouTubeUrl(material.url_file)
+                          ? (
+                            <img
+                              src={`https://img.youtube.com/vi/${extractYouTubeId(material.url_file)}/hqdefault.jpg`}
+                              alt={material.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )
+                          : material.url_file && (
+                            <img
+                              src={material.url_file}
+                              alt={material.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )
+                        }
                         <div>
                           <div className="text-sm font-medium text-gray-900">{material.title}</div>
                           <div className="text-sm text-gray-500">ID: {material.id}</div>
@@ -560,16 +671,15 @@ const EducationalMaterials: React.FC = () => {
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    page === currentPage
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${page === currentPage
                       ? 'bg-purple-600 text-white shadow-lg'
                       : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   {page}
                 </button>
               ))}
-              
+
               {pagination.total_pages > 5 && currentPage < pagination.total_pages - 2 && (
                 <>
                   <span className="px-2 text-gray-500">...</span>
@@ -622,7 +732,11 @@ const EducationalMaterials: React.FC = () => {
                   </svg>
                 </button>
               </div>
-
+              {/* Tab UI */}
+              <div className="flex mb-6">
+                <button type="button" onClick={() => setActiveTab('file')} className={`px-4 py-2 rounded-t-lg font-semibold ${activeTab === 'file' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>File</button>
+                <button type="button" onClick={() => setActiveTab('tautan')} className={`px-4 py-2 rounded-t-lg font-semibold ml-2 ${activeTab === 'tautan' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Tautan</button>
+              </div>
               <form onSubmit={handleCreateSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Judul Materi</label>
@@ -635,7 +749,6 @@ const EducationalMaterials: React.FC = () => {
                     placeholder="Masukkan judul materi edukasi"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Konten</label>
                   <textarea
@@ -647,41 +760,43 @@ const EducationalMaterials: React.FC = () => {
                     placeholder="Masukkan konten materi edukasi"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">File (Opsional)</label>
-                  <input
-                    type="file"
-                    onChange={(e) => setFormData(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    accept="image/*,application/pdf,.doc,.docx"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">Pilih file gambar atau dokumen untuk materi edukasi</p>
-                </div>
-
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Public ID (Opsional)</label>
-                  <input
-                    type="text"
-                    value={formData.public_id}
-                    onChange={(e) => setFormData(prev => ({ ...prev, public_id: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Masukkan public ID file"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">URL File (Opsional)</label>
-                  <input
-                    type="url"
-                    value={formData.url_file}
-                    onChange={(e) => setFormData(prev => ({ ...prev, url_file: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="https://example.com/file.jpg"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">Atau masukkan URL file yang sudah ada</p>
-                </div> */}
-
+                {activeTab === 'file' ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">File (Opsional)</label>
+                      <input
+                        type="file"
+                        onChange={(e) => setFormData(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        accept="image/*,application/pdf,.doc,.docx"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">Pilih file gambar atau dokumen untuk materi edukasi</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Public ID (Opsional)</label>
+                      <input
+                        type="text"
+                        value={formData.public_id}
+                        onChange={(e) => setFormData(prev => ({ ...prev, public_id: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Masukkan public ID file"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tautan (YouTube/Link)</label>
+                    <input
+                      type="url"
+                      value={formData.url_file}
+                      onChange={(e) => setFormData(prev => ({ ...prev, url_file: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="https://youtube.com/... atau https://example.com/file.pdf"
+                      required
+                    />
+                    <p className="text-sm text-gray-500 mt-1">Masukkan tautan YouTube atau file (PDF, gambar, dll)</p>
+                  </div>
+                )}
                 <div className="flex justify-end space-x-4 pt-4">
                   <button
                     type="button"
@@ -727,62 +842,68 @@ const EducationalMaterials: React.FC = () => {
                   </svg>
                 </button>
               </div>
-
-                             <form onSubmit={handleEditSubmit} className="space-y-6">
+              {/* Tab UI */}
+              <div className="flex mb-6">
+                <button type="button" onClick={() => setActiveTab('file')} className={`px-4 py-2 rounded-t-lg font-semibold ${activeTab === 'file' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}>File</button>
+                <button type="button" onClick={() => setActiveTab('tautan')} className={`px-4 py-2 rounded-t-lg font-semibold ml-2 ${activeTab === 'tautan' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'}`}>Tautan</button>
+              </div>
+              <form onSubmit={handleEditSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Judul Materi</label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     required
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Konten</label>
                   <textarea
                     value={formData.content}
                     onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
                     rows={6}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                     required
                   />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">File (Opsional)</label>
-                  <input
-                    type="file"
-                    onChange={(e) => setFormData(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    accept="image/*,application/pdf,.doc,.docx"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">Pilih file baru jika ingin mengganti file yang ada</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Public ID</label>
-                  <input
-                    type="text"
-                    value={formData.public_id}
-                    onChange={(e) => setFormData(prev => ({ ...prev, public_id: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">URL File</label>
-                  <input
-                    type="url"
-                    value={formData.url_file}
-                    onChange={(e) => setFormData(prev => ({ ...prev, url_file: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">Atau masukkan URL file yang sudah ada</p>
-                </div>
-
+                {activeTab === 'file' ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">File (Opsional)</label>
+                      <input
+                        type="file"
+                        onChange={(e) => setFormData(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                        accept="image/*,application/pdf,.doc,.docx"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">Pilih file baru jika ingin mengganti file yang ada</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Public ID</label>
+                      <input
+                        type="text"
+                        value={formData.public_id}
+                        onChange={(e) => setFormData(prev => ({ ...prev, public_id: e.target.value }))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tautan (YouTube/Link)</label>
+                    <input
+                      type="url"
+                      value={formData.url_file}
+                      onChange={(e) => setFormData(prev => ({ ...prev, url_file: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                      placeholder="https://youtube.com/... atau https://example.com/file.pdf"
+                      required
+                    />
+                    <p className="text-sm text-gray-500 mt-1">Masukkan tautan YouTube atau file (PDF, gambar, dll)</p>
+                  </div>
+                )}
                 <div className="flex justify-end space-x-4 pt-4">
                   <button
                     type="button"
@@ -832,19 +953,16 @@ const EducationalMaterials: React.FC = () => {
               <div className="space-y-6">
                 {selectedMaterial.url_file && (
                   <div className="w-full h-64 bg-gray-100 rounded-2xl overflow-hidden">
-                    <img
-                      src={selectedMaterial.url_file}
-                      alt={selectedMaterial.title}
-                      className="w-full h-full object-cover"
-                    />
+                    {/* Preview logic */}
+                    {renderFilePreview(selectedMaterial)}
                   </div>
                 )}
-                
+
                 <div>
                   <h4 className="text-xl font-bold text-gray-800 mb-2">{selectedMaterial.title}</h4>
                   <p className="text-gray-600 whitespace-pre-wrap">{selectedMaterial.content}</p>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                   <div>
                     <p className="text-sm text-gray-500">ID: {selectedMaterial.id}</p>
@@ -857,7 +975,7 @@ const EducationalMaterials: React.FC = () => {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end space-x-4 pt-4">
                   <button
                     onClick={() => openEditModal(selectedMaterial)}
@@ -871,6 +989,15 @@ const EducationalMaterials: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+                      download={(() => {
+                        const ext = getFileExtension(selectedMaterial.url_file);
+                        if (ext === '') {
+                          const parts = selectedMaterial.url_file.split('/');
+                          const base = parts[parts.length - 1];
+                          return base + '.pdf';
+                        }
+                        return undefined;
+                      })()}
                     >
                       Lihat File
                     </a>

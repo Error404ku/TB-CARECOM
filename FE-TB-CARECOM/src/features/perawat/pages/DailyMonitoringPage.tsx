@@ -5,6 +5,8 @@ import { useDailyMonitoring } from '../hooks';
 import { perawatUtils } from '../services';
 import type { DailyMonitoringParams } from '../types';
 import ModernLayout from '../../../layouts/ModernLayout';
+import { exportDailyMonitoringToExcel, exportDailyMonitoringToPDF } from '../../../utils/exportHelpers';
+import Swal from 'sweetalert2';
 
 const DailyMonitoringPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +20,8 @@ const DailyMonitoringPage: React.FC = () => {
     order_by: 'desc',
     per_page: 10
   });
+
+  const [exporting, setExporting] = useState<'excel' | 'pdf' | null>(null);
 
   const { dailyMonitoring, loading, error, isEmpty, refetch } = useDailyMonitoring(patientId);
 
@@ -35,6 +39,62 @@ const DailyMonitoringPage: React.FC = () => {
     const newParams = { ...searchParams, [key]: value };
     setSearchParams(newParams);
     refetch(patientId, newParams);
+  };
+
+  // Handle Excel export
+  const handleExportExcel = async () => {
+    if (!patient) return;
+    setExporting('excel');
+    try {
+      const success = await exportDailyMonitoringToExcel(patientId, patient.name);
+      if (success) {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Export Berhasil!',
+          text: 'Data daily monitoring berhasil diekspor ke Excel',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        throw new Error('Export gagal');
+      }
+    } catch (error) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Export Gagal!',
+        text: 'Terjadi kesalahan saat mengekspor data ke Excel',
+      });
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  // Handle PDF export
+  const handleExportPDF = async () => {
+    if (!patient) return;
+    setExporting('pdf');
+    try {
+      const success = await exportDailyMonitoringToPDF(patientId, patient.name);
+      if (success) {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Export Berhasil!',
+          text: 'Data daily monitoring berhasil diekspor ke PDF',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        throw new Error('Export gagal');
+      }
+    } catch (error) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Export Gagal!',
+        text: 'Terjadi kesalahan saat mengekspor data ke PDF',
+      });
+    } finally {
+      setExporting(null);
+    }
   };
 
   if (loading) {
@@ -235,6 +295,32 @@ const DailyMonitoringPage: React.FC = () => {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Export Buttons */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6 flex justify-end space-x-2">
+        <button
+          onClick={handleExportExcel}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          disabled={exporting === 'excel'}
+        >
+          {exporting === 'excel' ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto"></div>
+          ) : (
+            'Ekspor ke Excel'
+          )}
+        </button>
+        <button
+          onClick={handleExportPDF}
+          className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          disabled={exporting === 'pdf'}
+        >
+          {exporting === 'pdf' ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto"></div>
+          ) : (
+            'Ekspor ke PDF'
+          )}
+        </button>
       </div>
 
       {/* Monitoring Data */}

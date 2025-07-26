@@ -5,6 +5,8 @@ import { usePatients } from '../hooks';
 import { perawatUtils } from '../services';
 import type { PatientParams } from '../types';
 import ModernLayout from '../../../layouts/ModernLayout';
+import { exportPatientsToExcel, exportPatientsToPDF } from '../../../utils/exportHelpers';
+import Swal from 'sweetalert2';
 
 const PatientList: React.FC = () => {
   const [searchParams, setSearchParams] = useState<PatientParams>({
@@ -14,6 +16,8 @@ const PatientList: React.FC = () => {
     order_by: 'desc',
     per_page: 10
   });
+
+  const [exporting, setExporting] = useState<'excel' | 'pdf' | null>(null);
 
   const { patients, loading, error, pagination, refetch } = usePatients();
 
@@ -34,6 +38,60 @@ const PatientList: React.FC = () => {
   const handlePageChange = (page: number) => {
     const newParams = { ...searchParams, page };
     refetch(newParams);
+  };
+
+  // Handle Excel export
+  const handleExportExcel = async () => {
+    setExporting('excel');
+    try {
+      const success = await exportPatientsToExcel();
+      if (success) {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Export Berhasil!',
+          text: 'Data pasien berhasil diekspor ke Excel',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        throw new Error('Export gagal');
+      }
+    } catch (error) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Export Gagal!',
+        text: 'Terjadi kesalahan saat mengekspor data ke Excel',
+      });
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  // Handle PDF export
+  const handleExportPDF = async () => {
+    setExporting('pdf');
+    try {
+      const success = await exportPatientsToPDF();
+      if (success) {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Export Berhasil!',
+          text: 'Data pasien berhasil diekspor ke PDF',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        throw new Error('Export gagal');
+      }
+    } catch (error) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Export Gagal!',
+        text: 'Terjadi kesalahan saat mengekspor data ke PDF',
+      });
+    } finally {
+      setExporting(null);
+    }
   };
 
   return (
@@ -81,42 +139,79 @@ const PatientList: React.FC = () => {
                 Urutkan
               </label>
               <select
-                value={searchParams.sort_by || 'created_at'}
-                onChange={(e) => handleFilterChange('sort_by', e.target.value)}
+                value={`${searchParams.sort_by}-${searchParams.order_by}`}
+                onChange={(e) => {
+                  const [sort_by, order_by] = e.target.value.split('-') as [string, 'asc' | 'desc'];
+                  handleFilterChange('sort_by', sort_by);
+                  handleFilterChange('order_by', order_by);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="created_at">Tanggal Dibuat</option>
-                <option value="name">Nama</option>
-                <option value="start_treatment_date">Tanggal Mulai Pengobatan</option>
-                <option value="status">Status</option>
+                <option value="created_at-desc">Terbaru</option>
+                <option value="created_at-asc">Terlama</option>
+                <option value="name-asc">Nama A-Z</option>
+                <option value="name-desc">Nama Z-A</option>
               </select>
             </div>
 
-            {/* Order */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Urutan
-              </label>
-              <select
-                value={searchParams.order_by || 'desc'}
-                onChange={(e) => handleFilterChange('order_by', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            {/* Search Button */}
+            <div className="flex items-end">
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="desc">Terbaru ke Terlama</option>
-                <option value="asc">Terlama ke Terbaru</option>
-              </select>
+                Cari
+              </button>
             </div>
-          </div>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              Cari
-            </button>
           </div>
         </form>
+
+        {/* Export Buttons */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-gray-700">Export Data</h3>
+            <div className="flex space-x-2">
+              <button
+                onClick={handleExportExcel}
+                disabled={exporting === 'excel'}
+                className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                {exporting === 'excel' ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Mengekspor...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Export Excel</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleExportPDF}
+                disabled={exporting === 'pdf'}
+                className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                {exporting === 'pdf' ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Mengekspor...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Export PDF</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Results */}

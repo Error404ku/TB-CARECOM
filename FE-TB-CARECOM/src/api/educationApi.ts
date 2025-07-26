@@ -86,6 +86,15 @@ export const deleteEducationalMaterial = async (id: number): Promise<{ meta: { c
   return response.data;
 };
 
+// Tambah API untuk tautan (YouTube/Link)
+export const createEducationalMaterialYT = async (data: { title: string; content: string; url_file: string; }) => {
+  return privateClient.post('/admin/educational-material/tautan', data);
+};
+
+export const updateEducationalMaterialYT = async (id: number, data: { title?: string; content?: string; url_file?: string; }) => {
+  return privateClient.put(`/admin/educational-material/tautan/${id}`, data);
+};
+
 // Public access (if needed for unauthenticated users)
 export const getPublicEducationalMaterials = async (filters?: EducationalMaterialFilters): Promise<EducationalMaterialResponse> => {
   const params = new URLSearchParams();

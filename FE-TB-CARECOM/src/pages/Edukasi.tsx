@@ -4,6 +4,113 @@ import { useEducationalMaterials, useEducationPagination } from '../features/edu
 import type { EducationalMaterial } from '../features/education/types';
 import LoadingOverlay from '../components/LoadingOverlay';
 
+// Helper functions for file handling
+const getFileExtension = (url: string) => {
+  if (!url) return '';
+  // Handle Cloudinary URLs and other cloud storage URLs
+  const match = url.match(/\.([a-zA-Z0-9]+)(?:\?|#|$)/);
+  if (match) return match[1].toLowerCase();
+  return '';
+};
+
+const isYouTubeUrl = (url: string) => {
+  return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\//.test(url);
+};
+
+const getYouTubeEmbedUrl = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? `https://www.youtube.com/embed/${match[2]}` : '';
+};
+
+// Helper function to get PDF URL for files without extension
+// (No longer needed, just use url_file directly)
+// Remove getPdfUrl usage from preview and download
+
+// Helper function to render file preview
+const renderFilePreview = (material: EducationalMaterial) => {
+  const { url_file, title } = material;
+  
+  if (isYouTubeUrl(url_file)) {
+    return (
+      <iframe
+        src={getYouTubeEmbedUrl(url_file)}
+        title="YouTube Video"
+        className="w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+  
+  const ext = getFileExtension(url_file);
+  console.log('File extension:', ext, 'URL:', url_file); // Debug log
+  
+  if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) {
+    return (
+      <img
+        src={url_file}
+        alt={title}
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+        }}
+      />
+    );
+  } else if (ext === "pdf" || ext === "") {
+    return (
+      <div className="w-full h-full flex flex-col">
+        <iframe 
+          src={url_file} 
+          title="PDF Preview" 
+          className="w-full flex-1"
+          onError={() => console.log('PDF iframe error')}
+        />
+        <div className="p-2 bg-gray-50 text-xs text-gray-600 text-center">
+          {/* PDF Preview - <a href={url_file} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Buka di tab baru</a> */}
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <a 
+          href={url_file} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-blue-600 underline text-lg"
+        >
+          Lihat File ({ext || 'unknown'})
+        </a>
+      </div>
+    );
+  }
+};
+
+const handleDownload = async (url: string, filename: string) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error('Gagal mengunduh file:', error);
+  }
+};
+
+// Tambahkan helper untuk ambil YouTube video ID
+export const extractYouTubeId = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : '';
+};
+
 const Edukasi: React.FC = () => {
   const { filters, currentPage, search, handleSearch, setCurrentPage } = useEducationPagination();
   const { data, loading, error, refetch } = useEducationalMaterials(filters);
@@ -175,17 +282,28 @@ const Edukasi: React.FC = () => {
               >
                 {/* Image/File Display */}
                 <div className="h-48 bg-gradient-to-br from-blue-500 to-green-500 relative">
-                  {material.url_file && (
-                    <img
-                      src={material.url_file}
-                      alt={material.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback to gradient if image fails to load
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+                  {isYouTubeUrl(material.url_file)
+                    ? (
+                        <img
+                          src={`https://img.youtube.com/vi/${extractYouTubeId(material.url_file)}/hqdefault.jpg`}
+                          alt={material.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      )
+                    : material.url_file && (
+                        <img
+                          src={material.url_file}
+                          alt={material.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      )
+                  }
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                   <div className="absolute top-4 right-4">
                     <span className="bg-white/90 text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">
@@ -288,11 +406,7 @@ const Edukasi: React.FC = () => {
               <div className="space-y-6">
                 {selectedMaterial.url_file && (
                   <div className="w-full h-64 bg-gray-100 rounded-2xl overflow-hidden">
-                    <img
-                      src={selectedMaterial.url_file}
-                      alt={selectedMaterial.title}
-                      className="w-full h-full object-cover"
-                    />
+                    {renderFilePreview(selectedMaterial)}
                   </div>
                 )}
                 
@@ -309,16 +423,37 @@ const Edukasi: React.FC = () => {
                     )}
                   </div>
                   
-                  {selectedMaterial.url_file && (
-                    <a
-                      href={selectedMaterial.url_file}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200"
-                    >
-                      Lihat File
-                    </a>
-                  )}
+                  {selectedMaterial.url_file && (() => {
+                    const ext = getFileExtension(selectedMaterial.url_file);
+                    if (ext === '') {
+                      // Tombol download custom untuk file tanpa ekstensi
+                      return (
+                        <button
+                          onClick={() =>
+                            handleDownload(
+                              selectedMaterial.url_file,
+                              `${selectedMaterial.title || 'file-edukasi'}.pdf`
+                            )
+                          }
+                          className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200"
+                        >
+                          Unduh PDF
+                        </button>
+                      );
+                    }
+                    // Fallback ke <a> biasa jika ada ekstensi
+                    return (
+                      <a
+                        href={selectedMaterial.url_file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200"
+                        download
+                      >
+                        Lihat File
+                      </a>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
