@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('role')->default('pmo');//perawat, pmo. admin
             $table->string('password');
             $table->string('rs')->nullable();
+            $table->string('reset_password')->nullable();
             $table->timestamps();
         });
     }
