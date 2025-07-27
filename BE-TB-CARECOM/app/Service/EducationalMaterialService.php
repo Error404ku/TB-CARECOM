@@ -59,31 +59,32 @@ class EducationalMaterialService
     {
         try {
             // Tentukan resource type berdasarkan ekstensi file
-            $fileExtension = strtolower($data['file']->getClientOriginalExtension());
-            $resourceType = $fileExtension === 'pdf' ? 'raw' : 'auto';
-            
-            $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
-                'folder' => 'TB_CareCom/educational_materials',
-                'transformation' => [
-                    'quality' => 'auto',
-                    'fetch_format' => 'auto',
-                    'compression' => 'low',
-                ],
-                'resource_type' => $resourceType
-            ]);
-            if (!$uploadResult) {
-                return [
-                    'code' => 500,
-                    'success' => false,
-                    'message' => 'Gagal mengunggah file'
-                ];
+            if (isset($data['file'])) {
+                $fileExtension = strtolower($data['file']->getClientOriginalExtension());
+                $resourceType = $fileExtension === 'pdf' ? 'raw' : 'auto';
+                
+                $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
+                    'folder' => 'TB_CareCom/educational_materials',
+                    'transformation' => [
+                        'quality' => 'auto',
+                        'fetch_format' => 'auto',
+                        'compression' => 'low',
+                    ],
+                    'resource_type' => $resourceType
+                ]);
+                if (!$uploadResult) {
+                    return [
+                        'code' => 500,
+                        'success' => false,
+                        'message' => 'Gagal mengunggah file'
+                    ];
+                }
+                $data['url_file'] = $uploadResult['secure_url'];
+                $data['public_id'] = $uploadResult['public_id'];
             }
 
-            $data['url_file'] = $uploadResult['secure_url'];
-            $data['public_id'] = $uploadResult['public_id'];
-
             $educationalMaterial = $this->educationalMaterialRepository->create($data);
-            if (!$educationalMaterial) {
+            if (!$educationalMaterial && isset($data['file'])) {
                 cloudinary()->uploadApi()->destroy($data['public_id']);
                 return [
                     'code' => 400,
