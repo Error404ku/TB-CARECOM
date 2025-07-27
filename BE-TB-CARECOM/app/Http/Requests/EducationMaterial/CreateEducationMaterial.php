@@ -26,7 +26,7 @@ class CreateEducationMaterial extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'file' => 'file|mimes:jpeg,png,jpg,gif,svg,pdf,mp4',
+            'file' => 'file|mimes:jpeg,png,jpg,gif,svg,pdf,mp4|max:307200',
         ];
     }
 
@@ -40,6 +40,7 @@ class CreateEducationMaterial extends FormRequest
             'content.string' => 'Isi harus berupa string',
             'file.file' => 'File harus berupa file',
             'file.mimes' => 'File harus berupa jpeg, png, jpg, gif, svg, pdf, mp4',
+            'file.max' => 'File maksimal 300 MB',
         ];
     }
 }
