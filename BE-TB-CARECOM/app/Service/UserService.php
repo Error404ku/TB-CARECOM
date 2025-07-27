@@ -16,6 +16,22 @@ class UserService
         private UserRepository $userRepository,
     ) {}
 
+    public function GetByEmail(string $email)
+    {
+        $user = $this->userRepository->findByEmail($email);
+        if (!$user) {
+            return [
+                'code' => 404,
+                'success' => true,
+                'message' => 'User tidak ditemukan'
+            ];
+        }
+        return [
+            'success' => true,
+            'data' => $user,
+            'message' => 'User ditemukan'
+        ];
+    }
 
     public function login(array $data): array
     {

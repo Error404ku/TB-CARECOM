@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\User;
+use App\Mail\ResetPassword;
 use App\Service\PmoService;
 use App\Traits\ApiResponse;
 use App\Service\UserService;
+use Illuminate\Http\Request;
 use App\Service\PatientService;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\UpdateRequest;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\RequestResetPassword;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\UpdateByAdminRequest;
 
 class AuthController extends Controller
@@ -118,6 +125,73 @@ class AuthController extends Controller
             ], 200,'Token berhasil diperbarui');
         } catch (\Exception $e) {
             return $this->error('Terjadi kesalahan saat memperbarui token', 400, null);
+        }
+    }
+
+    public function requestResetPassword(RequestResetPassword $request)
+    {
+        try {
+            $user = $this->userService->GetByEmail($request->email);
+            if (!$user['success']) {
+                return $this->error($user['message'], $user['code'], null);
+            }
+
+            // Create JWT token with custom claims for password reset
+            $payload = [
+                'user_id' => $user['data']->id,
+                'email' => $user['data']->email,
+                'purpose' => 'password_reset',
+                'exp' => Carbon::now()->addMinutes(60)->timestamp, // 60 minutes expiry
+                'iat' => Carbon::now()->timestamp
+            ];
+
+            $token = JWTAuth::getJWTProvider()->encode($payload);
+            Mail::to($user['data']->email)->send(new ResetPassword($token));
+
+            return $this->success('Permintaan reset password berhasil', 200, null);
+        } catch (\Exception $e) {
+            return $this->error('Terjadi kesalahan saat membuat token reset password', 500, null);
+        }
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    {
+        try {
+            // Decode and validate JWT token
+            try {
+                $payload = JWTAuth::getJWTProvider()->decode($request->token);
+            } catch (\Exception $e) {
+                return $this->error('Token reset password tidak valid', 400, null);
+            }
+
+            // Check if token is for password reset purpose
+            if (!isset($payload['purpose']) || $payload['purpose'] !== 'password_reset') {
+                return $this->error('Token tidak valid untuk reset password', 400, null);
+            }
+
+            // Check if token is expired
+            if (isset($payload['exp']) && Carbon::now()->timestamp > $payload['exp']) {
+                return $this->error('Token reset password sudah expired', 400, null);
+            }
+
+            // Find user by ID from token
+            $user = User::find($payload['user_id']);
+            if (!$user) {
+                return $this->error('User tidak ditemukan', 404, null);
+            }
+
+            // Verify email matches
+            if ($user->email !== $payload['email']) {
+                return $this->error('Token tidak valid untuk user ini', 400, null);
+            }
+
+            // Update password
+            $user->password = bcrypt($request->password);
+            $user->save();
+
+            return $this->success('Password berhasil direset', 200, []);
+        } catch (\Exception $e) {
+            return $this->error('Terjadi kesalahan saat reset password: ' . $e->getMessage(), 500, null);
         }
     }
 }
