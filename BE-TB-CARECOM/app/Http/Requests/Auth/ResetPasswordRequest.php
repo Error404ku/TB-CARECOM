@@ -25,18 +25,18 @@ class ResetPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reset_token' => 'required|string',
-            'password' => 'required|confirmed|min:8',
+            'token' => 'required|string',
+            'password' => 'required|string|min:8',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'reset_token.required' => 'Token reset password harus diisi',
-            'reset_token.string' => 'Token reset password harus berupa string',
+            'token.required' => 'Token reset password harus diisi',
+            'token.string' => 'Token reset password harus berupa string',
             'password.required' => 'Password harus diisi',
-            'password.confirmed' => 'Konfirmasi password tidak cocok',
+            'password.string' => 'Password harus berupa string',
             'password.min' => 'Password minimal 8 karakter',
         ];
     }

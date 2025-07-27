@@ -148,11 +148,6 @@ class AuthController extends Controller
             $token = JWTAuth::getJWTProvider()->encode($payload);
             Mail::to($user['data']->email)->send(new ResetPassword($token));
 
-            $updatedUser = $this->userService->update($user['data']->id, ['reset_password' => $token]);
-            if (!$updatedUser['success']) {
-                return $this->error($updatedUser['message'], $updatedUser['code'], null);
-            }
-
             return $this->success('Permintaan reset password berhasil', 200, null);
         } catch (\Exception $e) {
             return $this->error('Terjadi kesalahan saat membuat token reset password', 500, null);
@@ -164,7 +159,7 @@ class AuthController extends Controller
         try {
             // Decode and validate JWT token
             try {
-                $payload = JWTAuth::getJWTProvider()->decode($request->reset_token);
+                $payload = JWTAuth::getJWTProvider()->decode($request->token);
             } catch (\Exception $e) {
                 return $this->error('Token reset password tidak valid', 400, null);
             }
