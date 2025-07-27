@@ -772,7 +772,7 @@ const EducationalMaterials: React.FC = () => {
                       />
                       <p className="text-sm text-gray-500 mt-1">Pilih file gambar atau dokumen untuk materi edukasi</p>
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Public ID (Opsional)</label>
                       <input
                         type="text"
@@ -781,7 +781,7 @@ const EducationalMaterials: React.FC = () => {
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Masukkan public ID file"
                       />
-                    </div>
+                    </div> */}
                   </>
                 ) : (
                   <div>
@@ -880,7 +880,7 @@ const EducationalMaterials: React.FC = () => {
                       />
                       <p className="text-sm text-gray-500 mt-1">Pilih file baru jika ingin mengganti file yang ada</p>
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Public ID</label>
                       <input
                         type="text"
@@ -888,7 +888,7 @@ const EducationalMaterials: React.FC = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, public_id: e.target.value }))}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
                       />
-                    </div>
+                    </div> */}
                   </>
                 ) : (
                   <div>
