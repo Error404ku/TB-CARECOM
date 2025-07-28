@@ -21,6 +21,8 @@ Route::get('/perawat', [UserController::class, 'getPerawat']);
 Route::prefix('/auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forgot-password', [AuthController::class, 'requestResetPassword']);
+    Route::post('/change-password', [AuthController::class, 'resetPassword']);
 });
 
 //middleware
