@@ -15,7 +15,7 @@ export const forgotPassword = (email: string) => {
 };
 
 export const resetPassword = (token: string, password: string, password_confirmation: string) => {
-  return publicClient.post('/auth/reset-password', { token, password, password_confirmation });
+  return publicClient.post('/auth/change-password', { token, password, password_confirmation });
 };
 
 // Private Authentication APIs (token required)
