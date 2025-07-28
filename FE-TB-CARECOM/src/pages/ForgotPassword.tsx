@@ -28,12 +28,11 @@ const ForgotPassword: React.FC = () => {
         errorMessage = errorData.errors.email[0];
       } else if (errorData?.meta?.message) {
         errorMessage = errorData.meta.message;
+      } else if (errorData?.message) {
+        errorMessage = errorData.message;
       }
       
-      showError(
-        'Gagal Mengirim Email',
-        errorMessage
-      );
+      showError('Gagal Mengirim Email', errorMessage);
     } finally {
       setIsLoading(false);
     }
