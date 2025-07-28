@@ -26,7 +26,7 @@ class CreateEducationMaterial extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'file' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf,mp4',
+            'file' => 'file|mimes:jpeg,png,jpg,gif,svg,pdf,mp4|max:307200',
         ];
     }
 
@@ -34,10 +34,13 @@ class CreateEducationMaterial extends FormRequest
     {
         return [
             'title.required' => 'Judul wajib diisi',
+            'title.string' => 'Judul harus berupa string',
+            'title.max' => 'Judul maksimal 255 karakter',
             'content.required' => 'Isi wajib diisi',
-            'file.required' => 'File wajib diisi',
+            'content.string' => 'Isi harus berupa string',
             'file.file' => 'File harus berupa file',
             'file.mimes' => 'File harus berupa jpeg, png, jpg, gif, svg, pdf, mp4',
+            'file.max' => 'File maksimal 300 MB',
         ];
     }
 }
