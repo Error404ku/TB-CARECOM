@@ -21,9 +21,18 @@ const ForgotPassword: React.FC = () => {
         'Silakan periksa email Anda untuk mendapatkan link reset password.'
       );
     } catch (error: any) {
+      const errorData = error?.response?.data;
+      let errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
+      
+      if (errorData?.errors?.email) {
+        errorMessage = errorData.errors.email[0];
+      } else if (errorData?.meta?.message) {
+        errorMessage = errorData.meta.message;
+      }
+      
       showError(
         'Gagal Mengirim Email',
-        error?.response?.data?.meta?.message || 'Terjadi kesalahan. Silakan coba lagi.'
+        errorMessage
       );
     } finally {
       setIsLoading(false);
