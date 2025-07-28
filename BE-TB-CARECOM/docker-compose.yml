@@ -24,6 +24,7 @@ services:
             - SESSION_DRIVER=database
             - CACHE_STORE=database
             - QUEUE_CONNECTION=database
+            - RESET_PASSWORD_URL=https://tbcarecom.experienceroleplay.online/reset-password
         # Using external Supabase database - no local db dependency
         networks:
             - tb-carecom-network
