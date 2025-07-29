@@ -192,11 +192,23 @@ export const getPMODashboard = async () => {
 };
 
 /**
- * Get all daily monitoring data for PMO
+ * Get all daily monitoring data for PMO with filtering
  */
-export const getAllDailyMonitoring = async () => {
+export const getAllDailyMonitoring = async (filters?: any) => {
   try {
-    return await privateClient.get<DailyMonitoringResponse>('/pmo/daily-monitoring');
+    const params = new URLSearchParams();
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.start_date) params.append('start_date', filters.start_date);
+    if (filters?.end_date) params.append('end_date', filters.end_date);
+    if (filters?.sort_by) params.append('sort_by', filters.sort_by);
+    if (filters?.order_by) params.append('order_by', filters.order_by);
+    if (filters?.per_page) params.append('per_page', filters.per_page.toString());
+    if (filters?.page) params.append('page', filters.page.toString());
+
+    const queryString = params.toString();
+    const url = `/pmo/daily-monitoring${queryString ? `?${queryString}` : ''}`;
+    
+    return await privateClient.get<DailyMonitoringResponse>(url);
   } catch (error: any) {
     // If API endpoint doesn't exist (404) or unauthorized (401), return empty data
     if (error.response?.status === 404 || error.response?.status === 401) {

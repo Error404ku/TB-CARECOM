@@ -541,4 +541,61 @@ export const useAdminDashboard = () => {
     error,
     refetch: fetchDashboardData
   };
+};
+
+// ================================
+// MONITORING HOOKS
+// ================================
+
+export const useMonitoring = (initialFilters?: any) => {
+  const [monitoring, setMonitoring] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<any>(null);
+  const [filters] = useState<any>(initialFilters || {});
+
+  const fetchMonitoring = async (searchFilters?: any) => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Fetching monitoring with filters:', searchFilters || filters);
+      const response = await getAllDailyMonitoringAdmin(searchFilters || filters);
+      console.log('API Response:', response);
+      console.log('Response data:', response.data);
+      console.log('Monitoring data:', response.data.data);
+      console.log('Pagination data:', response.data.pagination);
+      setMonitoring(response.data.data || []);
+      setPagination(response.data.pagination || {
+        page: 1,
+        per_page: 10,
+        total_items: 0,
+        total_pages: 1
+      });
+    } catch (err: any) {
+      console.error('Error fetching monitoring:', err);
+      console.error('Error response:', err.response);
+      setError(err.response?.data?.message || 'Terjadi kesalahan saat mengambil data monitoring');
+      setMonitoring([]);
+      setPagination({
+        page: 1,
+        per_page: 10,
+        total_items: 0,
+        total_pages: 1
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMonitoring();
+  }, []);
+
+  return {
+    monitoring,
+    loading,
+    error,
+    pagination,
+    refetch: fetchMonitoring
+  };
 }; 

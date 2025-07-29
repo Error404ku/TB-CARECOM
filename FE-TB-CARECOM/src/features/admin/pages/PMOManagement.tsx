@@ -37,12 +37,18 @@ const PMOManagement: React.FC = () => {
     relationship: ''
   });
   const [patients, setPatients] = useState<any[]>([]);
+  const [loadingPatients, setLoadingPatients] = useState(false);
 
   // Fetch patients saat modal tambah dibuka
   React.useEffect(() => {
     if (showCreateModal || showEditModal) {
+      setLoadingPatients(true);
       getAllPatients().then((res) => {
         setPatients(res.data.data || []);
+      }).catch((error) => {
+        console.error('Error fetching patients:', error);
+      }).finally(() => {
+        setLoadingPatients(false);
       });
     }
   }, [showCreateModal, showEditModal]);
@@ -93,8 +99,22 @@ const PMOManagement: React.FC = () => {
     }
   };
 
-  const handleEdit = (pmo: any) => {
+  const handleEdit = async (pmo: any) => {
     setEditingPMO(pmo);
+    
+    // Ensure patients data is loaded before setting form data
+    if (patients.length === 0) {
+      setLoadingPatients(true);
+      try {
+        const res = await getAllPatients();
+        setPatients(res.data.data || []);
+      } catch (error) {
+        console.error('Error fetching patients:', error);
+      } finally {
+        setLoadingPatients(false);
+      }
+    }
+    
     setFormData({
       patient_id: pmo.patient?.id?.toString() || '',
       name: pmo.name,
@@ -378,17 +398,27 @@ const PMOManagement: React.FC = () => {
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Pasien</label>
-                <select
-                  value={formData.patient_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, patient_id: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
-                >
-                  <option value="">Pilih Pasien</option>
-                  {patients.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name} - {p.address}</option>
-                  ))}
-                </select>
+                {loadingPatients ? (
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-gray-500">Memuat data pasien...</span>
+                  </div>
+                ) : (
+                  <select
+                    value={formData.patient_id}
+                    onChange={(e) => setFormData(prev => ({ ...prev, patient_id: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    required
+                  >
+                    <option value="">Pilih Pasien</option>
+                    {patients.map((p) => (
+                      <option key={p.id} value={p.id.toString()}>{p.name} - {p.address}</option>
+                    ))}
+                  </select>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nama PMO</label>
@@ -424,14 +454,21 @@ const PMOManagement: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Hubungan</label>
-                <input
-                  type="text"
+                <select
                   value={formData.relationship}
                   onChange={(e) => setFormData(prev => ({ ...prev, relationship: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Orang Tua, Saudara, dll"
                   required
-                />
+                >
+                  <option value="">Pilih Hubungan</option>
+                  <option value="Orang Tua">Orang Tua</option>
+                  <option value="Saudara">Saudara</option>
+                  <option value="Anak">Anak</option>
+                  <option value="Suami/Istri">Suami/Istri</option>
+                  <option value="Keluarga Lain">Keluarga Lain</option>
+                  <option value="Teman">Teman</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
               </div>
               <div className="flex justify-end space-x-3">
                 <button
@@ -461,17 +498,32 @@ const PMOManagement: React.FC = () => {
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Pasien</label>
-                <select
-                  value={formData.patient_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, patient_id: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
-                >
-                  <option value="">Pilih Pasien</option>
-                  {patients.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name} - {p.address}</option>
-                  ))}
-                </select>
+                {loadingPatients ? (
+                  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 flex items-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-gray-500">Memuat data pasien...</span>
+                  </div>
+                ) : (
+                  <select
+                    value={formData.patient_id}
+                    onChange={(e) => setFormData(prev => ({ ...prev, patient_id: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    required
+                  >
+                    <option value="">Pilih Pasien</option>
+                    {patients.map((p) => (
+                      <option key={p.id} value={p.id.toString()}>{p.name} - {p.address}</option>
+                    ))}
+                  </select>
+                )}
+                {formData.patient_id && !patients.find(p => p.id.toString() === formData.patient_id) && !loadingPatients && (
+                  <p className="text-sm text-red-600 mt-1">
+                    Pasien tidak ditemukan dalam daftar. Silakan pilih ulang.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nama PMO</label>
@@ -507,13 +559,21 @@ const PMOManagement: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Hubungan</label>
-                <input
-                  type="text"
+                <select
                   value={formData.relationship}
                   onChange={(e) => setFormData(prev => ({ ...prev, relationship: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
-                />
+                >
+                  <option value="">Pilih Hubungan</option>
+                  <option value="Orang Tua">Orang Tua</option>
+                  <option value="Saudara">Saudara</option>
+                  <option value="Anak">Anak</option>
+                  <option value="Suami/Istri">Suami/Istri</option>
+                  <option value="Keluarga Lain">Keluarga Lain</option>
+                  <option value="Teman">Teman</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
               </div>
               <div className="flex justify-end space-x-3">
                 <button

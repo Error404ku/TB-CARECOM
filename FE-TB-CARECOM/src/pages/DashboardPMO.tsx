@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import ModernLayout from '../layouts/ModernLayout';
 import { 
   getPMODashboard,
@@ -147,7 +148,8 @@ const DashboardPMO: React.FC = () => {
       } else if (selectedTab === 'patient') {
         if (!dashboardData) loadDashboardData();
       } else if (selectedTab === 'monitoring') {
-        if (dailyMonitoring.length === 0) loadDailyMonitoringLazy();
+        window.location.href = '/pmo/monitoring';
+        // if (dailyMonitoring.length === 0) loadDailyMonitoringLazy();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -460,6 +462,29 @@ const DashboardPMO: React.FC = () => {
                   <span className="text-xs md:text-sm font-medium text-orange-600 truncate block">{dashboardData.perawat.rs}</span>
                 </div>
               </div>
+
+              {/* Quick Actions */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Link
+                    to="/pmo/monitoring"
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">Monitoring Harian</h4>
+                        <p className="text-blue-100 text-sm">Lihat dan kelola laporan monitoring dengan fitur lengkap</p>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              </div>
             </>
           )}
 
@@ -546,9 +571,13 @@ const DashboardPMO: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon</label>
                     <input
-                      type="text"
+                      type="tel"
                       value={editPatientData.no_telp}
-                      onChange={(e) => setEditPatientData({...editPatientData, no_telp: e.target.value})}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9]/g, '');
+                        setEditPatientData({...editPatientData, no_telp: value});
+                      }}
+                      placeholder="Contoh: 08123456789"
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     />
                   </div>

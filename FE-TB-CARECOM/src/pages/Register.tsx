@@ -354,7 +354,18 @@ const Register: React.FC = () => {
             type="tel"
             name="no_telp_pmo"
             value={formData.no_telp_pmo}
-            onChange={handleChange}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, '');
+              const syntheticEvent = {
+                ...e,
+                target: {
+                  ...e.target,
+                  name: 'no_telp_pmo',
+                  value: value
+                }
+              };
+              handleChange(syntheticEvent);
+            }}
             required
             maxLength={13}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
@@ -471,7 +482,18 @@ const Register: React.FC = () => {
             type="tel"
             name="no_telp_patient"
             value={formData.no_telp_patient}
-            onChange={handleChange}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, '');
+              const syntheticEvent = {
+                ...e,
+                target: {
+                  ...e.target,
+                  name: 'no_telp_patient',
+                  value: value
+                }
+              };
+              handleChange(syntheticEvent);
+            }}
             required
             maxLength={13}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"

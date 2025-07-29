@@ -1,15 +1,14 @@
-// features/admin/pages/DailyMonitoringAdmin.tsx
+// features/pmo/pages/PMOMonitoringPage.tsx
 import React, { useState } from 'react';
-import { useMonitoring } from '../hooks';
-import { type MonitoringFilters } from '../types';
+import { usePMOMonitoring } from '../hooks';
+import { type PMOMonitoringFilters } from '../types';
 import ModernLayout from '../../../layouts/ModernLayout';
-import { exportAdminMonitoringToExcel, exportAdminMonitoringToPDF } from '../../../utils/exportHelpers';
+import { exportPMOMonitoringToExcel, exportPMOMonitoringToPDF } from '../../../utils/exportHelpers';
 import Swal from 'sweetalert2';
 
-const DailyMonitoringAdmin: React.FC = () => {
-  const [searchParams, setSearchParams] = useState<MonitoringFilters>({
+const PMOMonitoringPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useState<PMOMonitoringFilters>({
     search: '',
-    patient_id: '',
     start_date: '',
     end_date: '',
     sort_by: 'created_at',
@@ -19,35 +18,35 @@ const DailyMonitoringAdmin: React.FC = () => {
 
   const [exporting, setExporting] = useState<'excel' | 'pdf' | null>(null);
 
-  const { monitoring, loading, error, pagination, refetch } = useMonitoring();
+  const { monitoring, loading, error, pagination, refetch } = usePMOMonitoring();
 
   // Debug pagination state
-  console.log('Current pagination state:', pagination);
-  console.log('Current monitoring data:', monitoring);
+  console.log('Current PMO pagination state:', pagination);
+  console.log('Current PMO monitoring data:', monitoring);
 
   // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Search submitted with params:', searchParams);
+    console.log('PMO Search submitted with params:', searchParams);
     refetch(searchParams);
   };
 
   // Handle filter changes
-  const handleFilterChange = (key: keyof MonitoringFilters, value: string) => {
-    console.log('Filter change:', key, '=', value);
+  const handleFilterChange = (key: keyof PMOMonitoringFilters, value: string) => {
+    console.log('PMO Filter change:', key, '=', value);
     const newParams = { ...searchParams, [key]: value };
-    console.log('New filter params:', newParams);
-    console.log('Sorting params:', { sort_by: newParams.sort_by, order_by: newParams.order_by });
+    console.log('PMO New filter params:', newParams);
+    console.log('PMO Sorting params:', { sort_by: newParams.sort_by, order_by: newParams.order_by });
     setSearchParams(newParams);
     refetch(newParams);
   };
 
   // Handle pagination
   const handlePageChange = (page: number) => {
-    console.log('Changing to page:', page);
-    console.log('Current searchParams:', searchParams);
+    console.log('PMO Changing to page:', page);
+    console.log('PMO Current searchParams:', searchParams);
     const newParams = { ...searchParams, page };
-    console.log('New params for refetch:', newParams);
+    console.log('PMO New params for refetch:', newParams);
     setSearchParams(newParams);
     refetch(newParams);
   };
@@ -56,12 +55,12 @@ const DailyMonitoringAdmin: React.FC = () => {
   const handleExportExcel = async () => {
     setExporting('excel');
     try {
-      const success = await exportAdminMonitoringToExcel();
+      const success = await exportPMOMonitoringToExcel();
       if (success) {
         await Swal.fire({
           icon: 'success',
           title: 'Export Berhasil!',
-          text: 'Data monitoring berhasil diekspor ke Excel',
+          text: 'Data monitoring PMO berhasil diekspor ke Excel',
           timer: 2000,
           showConfirmButton: false
         });
@@ -83,12 +82,12 @@ const DailyMonitoringAdmin: React.FC = () => {
   const handleExportPDF = async () => {
     setExporting('pdf');
     try {
-      const success = await exportAdminMonitoringToPDF();
+      const success = await exportPMOMonitoringToPDF();
       if (success) {
         await Swal.fire({
           icon: 'success',
           title: 'Export Berhasil!',
-          text: 'Data monitoring berhasil diekspor ke PDF',
+          text: 'Data monitoring PMO berhasil diekspor ke PDF',
           timer: 2000,
           showConfirmButton: false
         });
@@ -107,7 +106,7 @@ const DailyMonitoringAdmin: React.FC = () => {
   };
 
   return (
-    <ModernLayout title="Monitoring Harian" subtitle="Kelola dan pantau laporan monitoring harian pasien TB">
+    <ModernLayout title="Monitoring PMO" subtitle="Kelola dan pantau laporan monitoring harian pasien TB">
       {/* Search and Filters */}
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 p-6 mb-6">
         <form onSubmit={handleSearch} className="space-y-4">
@@ -125,20 +124,6 @@ const DailyMonitoringAdmin: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-
-            {/* Patient ID Filter */}
-            {/* <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ID Pasien
-              </label>
-              <input
-                type="text"
-                value={searchParams.patient_id || ''}
-                onChange={(e) => handleFilterChange('patient_id', e.target.value)}
-                placeholder="ID Pasien..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div> */}
 
             {/* Start Date */}
             <div>
@@ -173,20 +158,18 @@ const DailyMonitoringAdmin: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Urutkan
               </label>
-                              <select
-                  value={`${searchParams.sort_by}-${searchParams.order_by}`}
-                  onChange={(e) => {
-                    const [sort_by, order_by] = e.target.value.split('-') as [string, 'asc' | 'desc'];
-                    handleFilterChange('sort_by', sort_by);
-                    handleFilterChange('order_by', order_by);
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="created_at-desc">Terbaru</option>
-                  <option value="created_at-asc">Terlama</option>
-                  {/* <option value="medication_time-desc">Waktu Obat (Terbaru)</option>
-                  <option value="medication_time-asc">Waktu Obat (Terlama)</option> */}
-                </select>
+              <select
+                value={`${searchParams.sort_by}-${searchParams.order_by}`}
+                onChange={(e) => {
+                  const [sort_by, order_by] = e.target.value.split('-') as [string, 'asc' | 'desc'];
+                  handleFilterChange('sort_by', sort_by);
+                  handleFilterChange('order_by', order_by);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="created_at-desc">Terbaru</option>
+                <option value="created_at-asc">Terlama</option>
+              </select>
             </div>
 
             {/* Per Page */}
@@ -307,20 +290,19 @@ const DailyMonitoringAdmin: React.FC = () => {
                   </>
                 )}
               </button>
-                              <button
-                  onClick={() => {
-                    const defaultParams = {
-                      search: '',
-                      patient_id: '',
-                      start_date: '',
-                      end_date: '',
-                      sort_by: 'created_at',
-                      order_by: 'desc',
-                      per_page: 10
-                    };
-                    setSearchParams(defaultParams);
-                    refetch(defaultParams);
-                  }}
+              <button
+                onClick={() => {
+                  const defaultParams = {
+                    search: '',
+                    start_date: '',
+                    end_date: '',
+                    sort_by: 'created_at',
+                    order_by: 'desc',
+                    per_page: 10
+                  };
+                  setSearchParams(defaultParams);
+                  refetch(defaultParams);
+                }}
                 disabled={loading}
                 className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
@@ -341,9 +323,6 @@ const DailyMonitoringAdmin: React.FC = () => {
                       No
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nama Pasien
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Waktu Minum Obat
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -357,35 +336,18 @@ const DailyMonitoringAdmin: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                                  <tbody className="bg-white divide-y divide-gray-200">
-                    {!monitoring || monitoring.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                          Tidak ada data monitoring
-                        </td>
-                      </tr>
-                    ) : (
-                      monitoring.map((item: any, index: number) => (
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {!monitoring || monitoring.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                        Tidak ada data monitoring
+                      </td>
+                    </tr>
+                  ) : (
+                    monitoring.map((item: any, index: number) => (
                       <tr key={item.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {((pagination?.page || 1) - 1) * (searchParams.per_page || 10) + index + 1}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center mr-3">
-                              <span className="text-white text-xs font-semibold">
-                                {item.patient?.name?.split(' ').map((n: string) => n[0]).join('') || 'N/A'}
-                              </span>
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {item.patient?.name || 'Tidak diketahui'}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                ID: {item.patient?.id || 'N/A'}
-                              </div>
-                            </div>
-                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {item.medication_time || 'Tidak diketahui'}
@@ -453,4 +415,4 @@ const DailyMonitoringAdmin: React.FC = () => {
   );
 };
 
-export default DailyMonitoringAdmin; 
+export default PMOMonitoringPage; 

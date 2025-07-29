@@ -3,6 +3,8 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { getPatients, getDailyMonitoring } from '../api/perawatApi';
+import { getAllDailyMonitoringAdmin } from '../api/adminApi';
+import { getAllDailyMonitoring } from '../api/pmoApi';
 import type { Patient, DailyMonitoring } from '../api/perawatApi';
 
 // Extend jsPDF type to include autoTable
@@ -246,6 +248,202 @@ export const exportDailyMonitoringToPDF = async (patientId: number, patientName?
     return true;
   } catch (error) {
     console.error('Error exporting daily monitoring to PDF:', error);
+    return false;
+  }
+};
+
+// Export admin monitoring to Excel
+export const exportAdminMonitoringToExcel = async () => {
+  try {
+    // Fetch all monitoring data with high pagination
+    const response = await getAllDailyMonitoringAdmin({ per_page: 1000000 });
+    const monitoringData = response.data.data;
+
+    // Prepare data for Excel
+    const excelData = monitoringData.map((monitoring: any, index: number) => ({
+      'No': index + 1,
+      'Nama Pasien': monitoring.patient?.name || 'Tidak diketahui',
+      'Waktu Minum Obat': monitoring.medication_time || 'Tidak diketahui',
+      'Deskripsi': monitoring.description || 'Tidak ada deskripsi',
+      'Tanggal Dibuat': formatDateForExport(monitoring.created_at),
+      'Terakhir Diperbarui': formatDateForExport(monitoring.updated_at)
+    }));
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // Auto-size columns
+    const colWidths = [
+      { wch: 5 },  // No
+      { wch: 25 }, // Nama Pasien
+      { wch: 20 }, // Waktu Minum Obat
+      { wch: 40 }, // Deskripsi
+      { wch: 20 }, // Tanggal Dibuat
+      { wch: 20 }  // Terakhir Diperbarui
+    ];
+    ws['!cols'] = colWidths;
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Monitoring Admin');
+    
+    // Generate filename with current date
+    const currentDate = new Date().toISOString().split('T')[0];
+    const filename = `Monitoring_Admin_${currentDate}.xlsx`;
+    
+    XLSX.writeFile(wb, filename);
+    return true;
+  } catch (error) {
+    console.error('Error exporting admin monitoring to Excel:', error);
+    return false;
+  }
+};
+
+// Export admin monitoring to PDF
+export const exportAdminMonitoringToPDF = async () => {
+  try {
+    // Fetch all monitoring data with high pagination
+    const response = await getAllDailyMonitoringAdmin({ per_page: 1000000 });
+    const monitoringData = response.data.data;
+
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.text('Monitoring Admin TB CareCom', 14, 15);
+    
+    // Add current date
+    doc.setFontSize(10);
+    doc.text(`Dicetak: ${formatDateForExport(new Date().toISOString())}`, 14, 25);
+
+    // Prepare table data
+    const tableData = monitoringData.map((monitoring: any, index: number) => [
+      index + 1,
+      monitoring.patient?.name || 'Tidak diketahui',
+      monitoring.medication_time || 'Tidak diketahui',
+      monitoring.description || 'Tidak ada deskripsi',
+      formatDateForExport(monitoring.created_at)
+    ]);
+
+    // Add table using autoTable function directly
+    autoTable(doc, {
+      startY: 35,
+      head: [['No', 'Nama Pasien', 'Waktu Minum Obat', 'Deskripsi', 'Tanggal']],
+      body: tableData,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [66, 139, 202] },
+      columnStyles: {
+        0: { cellWidth: 10 },  // No
+        1: { cellWidth: 35 },  // Nama Pasien
+        2: { cellWidth: 35 },  // Waktu Minum Obat
+        3: { cellWidth: 60 },  // Deskripsi
+        4: { cellWidth: 25 }   // Tanggal
+      }
+    });
+
+    // Generate filename with current date
+    const currentDate = new Date().toISOString().split('T')[0];
+    const filename = `Monitoring_Admin_${currentDate}.pdf`;
+    
+    doc.save(filename);
+    return true;
+  } catch (error) {
+    console.error('Error exporting admin monitoring to PDF:', error);
+    return false;
+  }
+};
+
+// Export PMO monitoring to Excel
+export const exportPMOMonitoringToExcel = async () => {
+  try {
+    // Fetch all monitoring data with high pagination
+    const response = await getAllDailyMonitoring({ per_page: 1000000 });
+    const monitoringData = response.data.data;
+
+    // Prepare data for Excel
+    const excelData = monitoringData.map((monitoring: any, index: number) => ({
+      'No': index + 1,
+      'Waktu Minum Obat': monitoring.medication_time || 'Tidak diketahui',
+      'Deskripsi': monitoring.description || 'Tidak ada deskripsi',
+      'Tanggal Dibuat': formatDateForExport(monitoring.created_at),
+      'Terakhir Diperbarui': formatDateForExport(monitoring.updated_at)
+    }));
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // Auto-size columns
+    const colWidths = [
+      { wch: 5 },  // No
+      { wch: 20 }, // Waktu Minum Obat
+      { wch: 40 }, // Deskripsi
+      { wch: 20 }, // Tanggal Dibuat
+      { wch: 20 }  // Terakhir Diperbarui
+    ];
+    ws['!cols'] = colWidths;
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Monitoring PMO');
+    
+    // Generate filename with current date
+    const currentDate = new Date().toISOString().split('T')[0];
+    const filename = `Monitoring_PMO_${currentDate}.xlsx`;
+    
+    XLSX.writeFile(wb, filename);
+    return true;
+  } catch (error) {
+    console.error('Error exporting PMO monitoring to Excel:', error);
+    return false;
+  }
+};
+
+// Export PMO monitoring to PDF
+export const exportPMOMonitoringToPDF = async () => {
+  try {
+    // Fetch all monitoring data with high pagination
+    const response = await getAllDailyMonitoring({ per_page: 1000000 });
+    const monitoringData = response.data.data;
+
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.text('Monitoring PMO TB CareCom', 14, 15);
+    
+    // Add current date
+    doc.setFontSize(10);
+    doc.text(`Dicetak: ${formatDateForExport(new Date().toISOString())}`, 14, 25);
+
+    // Prepare table data
+    const tableData = monitoringData.map((monitoring: any, index: number) => [
+      index + 1,
+      monitoring.medication_time || 'Tidak diketahui',
+      monitoring.description || 'Tidak ada deskripsi',
+      formatDateForExport(monitoring.created_at)
+    ]);
+
+    // Add table using autoTable function directly
+    autoTable(doc, {
+      startY: 35,
+      head: [['No', 'Waktu Minum Obat', 'Deskripsi', 'Tanggal']],
+      body: tableData,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [66, 139, 202] },
+      columnStyles: {
+        0: { cellWidth: 10 },  // No
+        1: { cellWidth: 35 },  // Waktu Minum Obat
+        2: { cellWidth: 80 },  // Deskripsi
+        3: { cellWidth: 25 }   // Tanggal
+      }
+    });
+
+    // Generate filename with current date
+    const currentDate = new Date().toISOString().split('T')[0];
+    const filename = `Monitoring_PMO_${currentDate}.pdf`;
+    
+    doc.save(filename);
+    return true;
+  } catch (error) {
+    console.error('Error exporting PMO monitoring to PDF:', error);
     return false;
   }
 }; 

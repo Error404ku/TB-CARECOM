@@ -314,10 +314,21 @@ export const deletePMO = async (id: number) => {
 // ================================
 
 /**
- * Get all daily monitoring
+ * Get all daily monitoring with filtering
  */
-export const getAllDailyMonitoringAdmin = async () => {
-  return privateClient.get('/admin/daily-monitoring');
+export const getAllDailyMonitoringAdmin = async (filters?: any) => {
+  const params = new URLSearchParams();
+  if (filters?.search) params.append('search', filters.search);
+  if (filters?.patient_id) params.append('patient_id', filters.patient_id);
+  if (filters?.start_date) params.append('start_date', filters.start_date);
+  if (filters?.end_date) params.append('end_date', filters.end_date);
+  if (filters?.sort_by) params.append('sort_by', filters.sort_by);
+  if (filters?.order_by) params.append('order_by', filters.order_by);
+  if (filters?.per_page) params.append('per_page', filters.per_page.toString());
+  if (filters?.page) params.append('page', filters.page.toString());
+
+  const queryString = params.toString();
+  return privateClient.get(`/admin/daily-monitoring${queryString ? `?${queryString}` : ''}`);
 };
 
 /**
