@@ -49,4 +49,48 @@ export const RELATIONSHIP_OPTIONS = [
   'Lainnya'
 ] as const;
 
-export type RelationshipType = typeof RELATIONSHIP_OPTIONS[number]; 
+export type RelationshipType = typeof RELATIONSHIP_OPTIONS[number];
+
+// PMO Monitoring types
+export interface PMOMonitoringFilters {
+  search?: string;
+  start_date?: string;
+  end_date?: string;
+  sort_by?: string;
+  order_by?: string;
+  per_page?: number;
+  page?: number;
+}
+
+export interface PMOMonitoringResponse {
+  meta: {
+    code: number;
+    message: string;
+  };
+  data: PMOMonitoringEntry[];
+  pagination: {
+    page: number;
+    per_page: number;
+    total_items: number;
+    total_pages: number;
+  };
+  current_filters: {
+    search: string;
+    start_date: string;
+    end_date: string;
+    sort_by: string;
+    sort_direction: string;
+  };
+}
+
+export interface PMOMonitoringEntry {
+  id: number;
+  medication_time: string;
+  description: string;
+  created_at: string | null;
+  updated_at: string | null;
+  patient?: {
+    id: number;
+    name: string;
+  };
+} 

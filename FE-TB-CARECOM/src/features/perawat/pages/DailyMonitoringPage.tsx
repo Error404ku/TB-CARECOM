@@ -280,8 +280,8 @@ const DailyMonitoringPage: React.FC = () => {
               >
                 <option value="created_at-desc">Terbaru</option>
                 <option value="created_at-asc">Terlama</option>
-                <option value="medication_time-desc">Waktu Obat (Terbaru)</option>
-                <option value="medication_time-asc">Waktu Obat (Terlama)</option>
+                {/* <option value="medication_time-desc">Waktu Obat (Terbaru)</option>
+                <option value="medication_time-asc">Waktu Obat (Terlama)</option> */}
               </select>
             </div>
           </div>

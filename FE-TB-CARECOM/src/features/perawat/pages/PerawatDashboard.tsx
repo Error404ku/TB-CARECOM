@@ -104,7 +104,7 @@ const PerawatDashboard: React.FC = () => {
             <p className="text-sm text-gray-600">Pantau progress pengobatan harian pasien</p>
           </Link>
           
-          <Link
+          {/* <Link
             to="/perawat/patients"
             className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 text-left block"
           >
@@ -113,7 +113,7 @@ const PerawatDashboard: React.FC = () => {
             </div>
             <h3 className="font-semibold text-gray-800 mb-2">Laporan</h3>
             <p className="text-sm text-gray-600">Buat dan lihat laporan monitoring</p>
-          </Link>
+          </Link> */}
         </div>
       </div>
 

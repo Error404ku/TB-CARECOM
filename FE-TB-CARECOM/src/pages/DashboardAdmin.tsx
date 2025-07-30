@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ModernLayout from '../layouts/ModernLayout';
 
 const DashboardAdmin: React.FC = () => {
@@ -59,6 +60,16 @@ const DashboardAdmin: React.FC = () => {
       color: 'from-purple-500 to-purple-600'
     },
     {
+      title: 'Monitoring Harian',
+      description: 'Pantau laporan monitoring',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      ),
+      color: 'from-purple-500 to-purple-600'
+    },
+    {
       title: 'Konsultasi',
       description: 'Jadwal konsultasi pasien',
       icon: (
@@ -110,16 +121,17 @@ const DashboardAdmin: React.FC = () => {
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Aksi Cepat</h2>
         <div className="grid md:grid-cols-4 gap-6">
           {quickActions.map((action, index) => (
-            <button
+            <Link
               key={index}
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 text-left"
+              to={action.title === 'Monitoring Harian' ? '/admin/monitoring' : '#'}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 text-left block"
             >
               <div className={`w-12 h-12 bg-gradient-to-r ${action.color} rounded-xl flex items-center justify-center mb-4`}>
                 {action.icon}
               </div>
               <h3 className="font-semibold text-gray-800 mb-2">{action.title}</h3>
               <p className="text-sm text-gray-600">{action.description}</p>
-            </button>
+            </Link>
           ))}
         </div>
       </div>

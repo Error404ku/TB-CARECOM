@@ -181,7 +181,19 @@ export default function ProfileAdmin() {
                           type="tel"
                           name="phone"
                           value={profileData.phone}
-                          onChange={handleChange}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            const syntheticEvent = {
+                              ...e,
+                              target: {
+                                ...e.target,
+                                name: 'phone',
+                                value: value
+                              }
+                            };
+                            handleChange(syntheticEvent);
+                          }}
+                          placeholder="Contoh: 08123456789"
                           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                       ) : (

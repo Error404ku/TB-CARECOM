@@ -37,6 +37,7 @@ import PMOManagement from './features/admin/pages/PMOManagement';
 import PMODetail from './features/admin/pages/PMODetail';
 import EducationalMaterials from './features/admin/pages/EducationalMaterials';
 import DailyMonitoringAdmin from './features/admin/pages/DailyMonitoringAdmin';
+import PMOMonitoringPage from './features/pmo/pages/PMOMonitoringPage';
 
 // Perawat/Nurse Pages (Nurse authentication required)
 import DashboardPerawat from './pages/DashboardPerawat';
@@ -155,6 +156,15 @@ const App = () => {
               <AdminRoute>
                 <DailyMonitoringAdmin />
               </AdminRoute>
+            } />
+
+            {/* =========================== PMO ROUTES =========================== */}
+            {/* These routes require PMO authentication and use privateClient */}
+            
+            <Route path="/pmo/monitoring" element={
+              <PMORoute>
+                <PMOMonitoringPage />
+              </PMORoute>
             } />
 
             {/* =========================== PERAWAT/NURSE ROUTES =========================== */}
