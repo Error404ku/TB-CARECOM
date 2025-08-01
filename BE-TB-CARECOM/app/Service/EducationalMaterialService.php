@@ -79,7 +79,9 @@ class EducationalMaterialService
                         'message' => 'Gagal mengunggah file'
                     ];
                 }
-                $data['url_file'] = $uploadResult['secure_url'];
+                if ($fileExtension === 'pdf'){
+                    $data['url_file'] = $uploadResult['secure_url'] . ".pdf";
+                }
                 $data['public_id'] = $uploadResult['public_id'];
             }
 
