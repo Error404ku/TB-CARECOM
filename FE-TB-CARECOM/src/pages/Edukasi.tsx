@@ -17,6 +17,11 @@ const isYouTubeUrl = (url: string) => {
   return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\//.test(url);
 };
 
+const isVideoFile = (url: string) => {
+  const ext = getFileExtension(url);
+  return ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(ext);
+};
+
 const getYouTubeEmbedUrl = (url: string) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
@@ -425,32 +430,46 @@ const Edukasi: React.FC = () => {
                   
                   {selectedMaterial.url_file && (() => {
                     const ext = getFileExtension(selectedMaterial.url_file);
-                    if (ext === '') {
-                      // Tombol download custom untuk file tanpa ekstensi
+                    const isYouTube = isYouTubeUrl(selectedMaterial.url_file);
+                    const isVideo = isVideoFile(selectedMaterial.url_file);
+                    
+                    if (isYouTube || isVideo) {
+                      // Video files and YouTube links - show "Lihat Video" button
+                      return (
+                        <a
+                          href={selectedMaterial.url_file}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200"
+                        >
+                          🎥 Lihat Video
+                        </a>
+                      );
+                    } else if (ext === '' || ext === 'pdf' || ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
+                      // PDF and document files - show download button
                       return (
                         <button
                           onClick={() =>
                             handleDownload(
                               selectedMaterial.url_file,
-                              `${selectedMaterial.title || 'file-edukasi'}.pdf`
+                              `${selectedMaterial.title || 'file-edukasi'}${ext ? '.' + ext : '.pdf'}`
                             )
                           }
                           className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200"
                         >
-                          Unduh PDF
+                          📄 Unduh {ext ? ext.toUpperCase() : 'PDF'}
                         </button>
                       );
                     }
-                    // Fallback ke <a> biasa jika ada ekstensi
+                    // Fallback for other file types
                     return (
                       <a
                         href={selectedMaterial.url_file}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200"
-                        download
                       >
-                        Lihat File
+                        📎 Lihat File
                       </a>
                     );
                   })()}
