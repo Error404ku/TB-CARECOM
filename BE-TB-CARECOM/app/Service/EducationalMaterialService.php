@@ -65,12 +65,14 @@ class EducationalMaterialService
                 
                 $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
                     'folder' => 'TB_CareCom/educational_materials',
+                    'resource_type' => $resourceType,
+                    'format' => $fileExtension,
+                    'public_id' => uniqid('edu_material_'),
                     'transformation' => [
                         'quality' => 'auto',
                         'fetch_format' => 'auto',
                         'compression' => 'low',
-                    ],
-                    'resource_type' => $resourceType
+                    ]
                 ]);
                 if (!$uploadResult) {
                     return [
@@ -127,12 +129,14 @@ class EducationalMaterialService
                 }
                 $uploadResult = cloudinary()->uploadApi()->upload($data['file']->getRealPath(), [
                     'folder' => 'TB_CareCom/educational_materials',
+                    'resource_type' => $resourceType,
+                    'format' => $fileExtension,
+                    'public_id' => uniqid('edu_material_'),
                     'transformation' => [
                         'quality' => 'auto',
                         'fetch_format' => 'auto',
                         'compression' => 'low',
-                    ],
-                    'resource_type' => $resourceType
+                    ]
                 ]);
                 if (!$uploadResult) {
                     return [
