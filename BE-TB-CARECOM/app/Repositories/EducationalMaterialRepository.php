@@ -42,7 +42,7 @@ class EducationalMaterialRepository
 
         $query->orderBy('created_at', 'desc');
 
-        $paginator = $query->paginate($filters['per_page'] ?? 10);
+        $paginator = $query->paginate($filters['per_page'] ?? 12);
         return $paginator->withQueryString();
     }
 
