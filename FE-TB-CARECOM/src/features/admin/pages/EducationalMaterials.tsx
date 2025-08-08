@@ -20,6 +20,11 @@ const isYouTubeUrl = (url: string) => {
   return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\//.test(url);
 };
 
+const isVideoFile = (url: string) => {
+  const ext = getFileExtension(url);
+  return ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(ext);
+};
+
 const getYouTubeEmbedUrl = (url: string) => {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
@@ -983,25 +988,65 @@ const EducationalMaterials: React.FC = () => {
                   >
                     Edit Materi
                   </button>
-                  {selectedMaterial.url_file && (
-                    <a
-                      href={selectedMaterial.url_file}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all duration-200"
-                      download={(() => {
-                        const ext = getFileExtension(selectedMaterial.url_file);
-                        if (ext === '') {
-                          const parts = selectedMaterial.url_file.split('/');
-                          const base = parts[parts.length - 1];
-                          return base + '.pdf';
+                  {selectedMaterial.url_file && (() => {
+                    const ext = getFileExtension(selectedMaterial.url_file);
+                    const isYouTube = isYouTubeUrl(selectedMaterial.url_file);
+                    const isVideo = isVideoFile(selectedMaterial.url_file);
+                    
+                    if (isYouTube || isVideo) {
+                      // Video files and YouTube links - show "Lihat Video" button
+                      return (
+                        <a
+                          href={selectedMaterial.url_file}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+                        >
+                          🎥 Lihat Video
+                        </a>
+                      );
+                    } else if (ext === '' || ext === 'pdf' || ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'].includes(ext)) {
+                      // PDF and document files - show download button with custom download logic
+                      const handleDownloadFile = async () => {
+                        try {
+                          const response = await fetch(selectedMaterial.url_file);
+                          const blob = await response.blob();
+                          const blobUrl = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = blobUrl;
+                          a.download = `${selectedMaterial.title || 'file-edukasi'}${ext ? '.' + ext : '.pdf'}`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          window.URL.revokeObjectURL(blobUrl);
+                        } catch (error) {
+                          console.error('Gagal mengunduh file:', error);
+                          // Fallback to direct link
+                          window.open(selectedMaterial.url_file, '_blank');
                         }
-                        return undefined;
-                      })()}
-                    >
-                      Lihat File
-                    </a>
-                  )}
+                      };
+                      
+                      return (
+                        <button
+                          onClick={handleDownloadFile}
+                          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+                        >
+                          📄 Unduh {ext ? ext.toUpperCase() : 'PDF'}
+                        </button>
+                      );
+                    }
+                    // Fallback for other file types
+                    return (
+                      <a
+                        href={selectedMaterial.url_file}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+                      >
+                        📎 Lihat File
+                      </a>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
