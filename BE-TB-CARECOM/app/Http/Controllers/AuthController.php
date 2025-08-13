@@ -53,6 +53,8 @@ class AuthController extends Controller
                 'gender' => $request->validated('gender_patient'),
                 'no_telp' => $request->validated('no_telp_patient'),
                 'start_treatment_date' => $request->validated('start_treatment_date'),
+                'diagnose_date' => $request->validated('diagnose_date'),
+                'birth_date' => $request->validated('birth_date'),
                 'assigned_nurse_id' => $request->validated('assigned_nurse_id'),
                 'status' => $request->validated('status_patient'),
             ];

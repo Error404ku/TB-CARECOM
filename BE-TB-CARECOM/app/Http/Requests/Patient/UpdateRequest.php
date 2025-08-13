@@ -29,6 +29,8 @@ class UpdateRequest extends FormRequest
             'address' => 'required|string|max:255',
             'gender' => 'required|string|max:255',
             'no_telp' => 'required|string|max:255',
+            'diagnose_date' => 'required|date',
+            'birth_date' => 'required|date',
             'status' => 'required|string|max:255',
         ];
     }
@@ -48,6 +50,10 @@ class UpdateRequest extends FormRequest
             'address.required' => 'Alamat harus diisi.',
             'no_telp.string' => 'Nomor telepon harus berupa teks.',
             'no_telp.max' => 'Nomor telepon tidak boleh melebihi 255 karakter.',
+            'diagnose_date.required' => 'Tanggal diagnosis harus diisi.',
+            'diagnose_date.date' => 'Tanggal diagnosis harus berupa tanggal.',
+            'birth_date.required' => 'Tanggal lahir harus diisi.',
+            'birth_date.date' => 'Tanggal lahir harus berupa tanggal.',
             'status.required' => 'Status harus diisi.',
             'status.string' => 'Status harus berupa teks.',
             'status.max' => 'Status tidak boleh melebihi 255 karakter.',
