@@ -18,6 +18,8 @@ class Patient extends Model
         'gender',
         'no_telp',
         'start_treatment_date',
+        'diagnose_date',
+        'birth_date',
         'qr_code_identifier',
         'assigned_nurse_id',
         'status'
@@ -25,6 +27,8 @@ class Patient extends Model
 
     protected $casts = [
         'start_treatment_date' => 'date',
+        'diagnose_date' => 'date',
+        'birth_date' => 'date',
     ];
 
     protected static function booted(): void
