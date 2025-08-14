@@ -25,6 +25,7 @@ class GetAllResource extends JsonResource
                 'address' => $this->patient->address,
                 'gender' => $this->patient->gender,
                 'no_telp' => $this->patient->no_telp,
+                'birth_date' => $this->patient->birth_date,
                 'status' => $this->patient->status,
             ] : null,
             'user' => $this->user ? [
