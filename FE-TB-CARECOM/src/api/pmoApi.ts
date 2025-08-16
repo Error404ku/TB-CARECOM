@@ -21,6 +21,8 @@ export interface PatientData {
   gender: string;
   no_telp: string;
   status: string;
+  diagnose_date?: string;
+  birth_date?: string;
   pmo: {
     id: number;
     name: string;
@@ -48,6 +50,8 @@ export interface DashboardPatient {
   created_at: string;
   updated_at: string;
   gender: string;
+  diagnose_date?: string;
+  birth_date?: string;
   assigned_nurse: {
     id: number;
     name: string;
@@ -137,6 +141,8 @@ export interface UpdatePatientRequest {
   address: string;
   gender: 'P' | 'L'; // P for Perempuan, L for Laki-laki 
   no_telp: string;
+  diagnose_date: string;
+  birth_date: string;
   status: 'aktif' | 'sembuh' | 'gagal';
 }
 

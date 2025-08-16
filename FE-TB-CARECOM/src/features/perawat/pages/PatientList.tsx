@@ -298,12 +298,12 @@ const PatientList: React.FC = () => {
                         >
                           Detail
                         </Link>
-                        <Link
+                        {/* <Link
                           to={`/perawat/patients/${patient.id}/monitoring`}
                           className="text-green-600 hover:text-green-900"
                         >
                           Monitoring
-                        </Link>
+                        </Link> */}
                       </td>
                     </tr>
                   ))}

@@ -151,10 +151,14 @@ export const exportPatientsToPDF = async () => {
 };
 
 // Export daily monitoring to Excel
-export const exportDailyMonitoringToExcel = async (patientId: number, patientName?: string) => {
+export const exportDailyMonitoringToExcel = async (patientId: number, patientName?: string, filters?: any) => {
   try {
-    // Fetch all daily monitoring data with high pagination
-    const response = await getDailyMonitoring(patientId, { per_page: 1000000 });
+    // Fetch daily monitoring data with current filters
+    const exportParams = {
+      ...filters,
+      per_page: filters?.per_page === -1 ? 1000000 : (filters?.per_page || 1000000)
+    };
+    const response = await getDailyMonitoring(patientId, exportParams);
     const monitoringData = response.data.data;
 
     // Prepare data for Excel
@@ -186,7 +190,8 @@ export const exportDailyMonitoringToExcel = async (patientId: number, patientNam
     
     // Generate filename with current date and patient info
     const currentDate = new Date().toISOString().split('T')[0];
-    const filename = `Daily_Monitoring_${patientName || `Pasien_${patientId}`}_${currentDate}.xlsx`;
+    const filterInfo = filters ? `_Filtered` : '';
+    const filename = `Daily_Monitoring_${patientName || `Pasien_${patientId}`}${filterInfo}_${currentDate}.xlsx`;
     
     XLSX.writeFile(wb, filename);
     return true;
@@ -197,10 +202,14 @@ export const exportDailyMonitoringToExcel = async (patientId: number, patientNam
 };
 
 // Export daily monitoring to PDF
-export const exportDailyMonitoringToPDF = async (patientId: number, patientName?: string) => {
+export const exportDailyMonitoringToPDF = async (patientId: number, patientName?: string, filters?: any) => {
   try {
-    // Fetch all daily monitoring data with high pagination
-    const response = await getDailyMonitoring(patientId, { per_page: 1000000 });
+    // Fetch daily monitoring data with current filters
+    const exportParams = {
+      ...filters,
+      per_page: filters?.per_page === -1 ? 1000000 : (filters?.per_page || 1000000)
+    };
+    const response = await getDailyMonitoring(patientId, exportParams);
     const monitoringData = response.data.data;
 
     const doc = new jsPDF();
@@ -213,9 +222,18 @@ export const exportDailyMonitoringToPDF = async (patientId: number, patientName?
     doc.setFontSize(12);
     doc.text(`Pasien: ${patientName || `ID ${patientId}`}`, 14, 25);
     
-    // Add current date
+    // Add current date and filter info
     doc.setFontSize(10);
     doc.text(`Dicetak: ${formatDateForExport(new Date().toISOString())}`, 14, 35);
+    
+    // Add filter information if filters are applied
+    if (filters && (filters.search || filters.start_date || filters.end_date)) {
+      let filterText = 'Filter: ';
+      if (filters.search) filterText += `Pencarian: "${filters.search}" `;
+      if (filters.start_date) filterText += `Dari: ${filters.start_date} `;
+      if (filters.end_date) filterText += `Sampai: ${filters.end_date} `;
+      doc.text(filterText, 14, 42);
+    }
 
     // Prepare table data
     const tableData = monitoringData.map((monitoring: DailyMonitoring, index: number) => [
@@ -226,8 +244,9 @@ export const exportDailyMonitoringToPDF = async (patientId: number, patientName?
     ]);
 
     // Add table using autoTable function directly
+    const startY = filters && (filters.search || filters.start_date || filters.end_date) ? 52 : 45;
     autoTable(doc, {
-      startY: 45,
+      startY: startY,
       head: [['No', 'Waktu Minum Obat', 'Deskripsi', 'Tanggal']],
       body: tableData,
       styles: { fontSize: 9 },
@@ -242,7 +261,8 @@ export const exportDailyMonitoringToPDF = async (patientId: number, patientName?
 
     // Generate filename with current date and patient info
     const currentDate = new Date().toISOString().split('T')[0];
-    const filename = `Daily_Monitoring_${patientName || `Pasien_${patientId}`}_${currentDate}.pdf`;
+    const filterInfo = filters ? `_Filtered` : '';
+    const filename = `Daily_Monitoring_${patientName || `Pasien_${patientId}`}${filterInfo}_${currentDate}.pdf`;
     
     doc.save(filename);
     return true;

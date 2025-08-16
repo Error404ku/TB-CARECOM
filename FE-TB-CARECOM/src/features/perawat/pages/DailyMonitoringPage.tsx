@@ -46,12 +46,12 @@ const DailyMonitoringPage: React.FC = () => {
     if (!patient) return;
     setExporting('excel');
     try {
-      const success = await exportDailyMonitoringToExcel(patientId, patient.name);
+      const success = await exportDailyMonitoringToExcel(patientId, patient.name, searchParams);
       if (success) {
         await Swal.fire({
           icon: 'success',
           title: 'Export Berhasil!',
-          text: 'Data daily monitoring berhasil diekspor ke Excel',
+          text: 'Data daily monitoring berhasil diekspor ke Excel sesuai filter yang aktif',
           timer: 2000,
           showConfirmButton: false
         });
@@ -74,12 +74,12 @@ const DailyMonitoringPage: React.FC = () => {
     if (!patient) return;
     setExporting('pdf');
     try {
-      const success = await exportDailyMonitoringToPDF(patientId, patient.name);
+      const success = await exportDailyMonitoringToPDF(patientId, patient.name, searchParams);
       if (success) {
         await Swal.fire({
           icon: 'success',
           title: 'Export Berhasil!',
-          text: 'Data daily monitoring berhasil diekspor ke PDF',
+          text: 'Data daily monitoring berhasil diekspor ke PDF sesuai filter yang aktif',
           timer: 2000,
           showConfirmButton: false
         });
@@ -223,7 +223,7 @@ const DailyMonitoringPage: React.FC = () => {
       {/* Search and Filters */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <form onSubmit={handleSearch} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {/* Search Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -282,6 +282,25 @@ const DailyMonitoringPage: React.FC = () => {
                 <option value="created_at-asc">Terlama</option>
                 {/* <option value="medication_time-desc">Waktu Obat (Terbaru)</option>
                 <option value="medication_time-asc">Waktu Obat (Terlama)</option> */}
+              </select>
+            </div>
+
+            {/* Per Page */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Data per Halaman
+              </label>
+              <select
+                value={searchParams.per_page || 10}
+                onChange={(e) => handleFilterChange('per_page', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+                <option value={-1}>Tidak Terbatas</option>
               </select>
             </div>
           </div>

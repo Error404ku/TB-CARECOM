@@ -22,6 +22,8 @@ interface RegisterFormData {
   gender_patient: string;
   no_telp_patient: string;
   start_treatment_date: string;
+  diagnose_date: string;
+  birth_date: string;
   assigned_nurse_id: string;
   status_patient: string;
 }
@@ -52,6 +54,8 @@ const Register: React.FC = () => {
     gender_patient: '',
     no_telp_patient: '',
     start_treatment_date: '',
+    diagnose_date: '',
+    birth_date: '',
     assigned_nurse_id: '',
     status_patient: 'Aktif'
   });
@@ -182,6 +186,8 @@ const Register: React.FC = () => {
     formData.gender_patient.trim() !== '' &&
     formData.no_telp_patient.trim() !== '' &&
     formData.start_treatment_date.trim() !== '' &&
+    formData.diagnose_date.trim() !== '' &&
+    formData.birth_date.trim() !== '' &&
     formData.assigned_nurse_id.trim() !== '' &&
     formData.status_patient.trim() !== '';
 
@@ -517,6 +523,50 @@ const Register: React.FC = () => {
             type="date"
             name="start_treatment_date"
             value={formData.start_treatment_date}
+            onChange={handleChange}
+            required
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+          />
+        </div>
+      </div>
+
+      {/* Diagnose Date */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Tanggal Diagnosa *
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <input
+            type="date"
+            name="diagnose_date"
+            value={formData.diagnose_date}
+            onChange={handleChange}
+            required
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+          />
+        </div>
+      </div>
+
+      {/* Birth Date */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Tanggal Lahir *
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <input
+            type="date"
+            name="birth_date"
+            value={formData.birth_date}
             onChange={handleChange}
             required
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"

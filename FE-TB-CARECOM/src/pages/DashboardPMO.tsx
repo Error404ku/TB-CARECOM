@@ -20,6 +20,8 @@ interface UpdatePatientUIRequest {
   address: string;
   gender: 'Perempuan' | 'Laki-laki';
   no_telp: string;
+  diagnose_date: string;
+  birth_date: string;
   status: 'aktif' | 'sembuh' | 'gagal';
 }
 import { showSuccess, showError, showConfirm } from '../utils/sweetAlert';
@@ -48,6 +50,8 @@ const DashboardPMO: React.FC = () => {
     address: '',
     gender: 'Laki-laki',
     no_telp: '',
+    diagnose_date: '',
+    birth_date: '',
     status: 'aktif'
   });
   
@@ -72,6 +76,8 @@ const DashboardPMO: React.FC = () => {
       gender: dashboard.patient.gender === 'P' ? 'Perempuan' : 'Laki-laki',
       no_telp: dashboard.patient.no_telp,
       status: dashboard.patient.status,
+      diagnose_date: dashboard.patient.diagnose_date,
+      birth_date: dashboard.patient.birth_date,
       pmo: {
         id: dashboard.pmo.id,
         name: dashboard.pmo.name,
@@ -103,7 +109,9 @@ const DashboardPMO: React.FC = () => {
           address: patient.address,
           gender: mapGenderFromAPI(patient.gender),
           no_telp: patient.no_telp,
-          status: patient.status as 'aktif' | 'sembuh' | 'gagal'
+          diagnose_date: patient.diagnose_date ? patient.diagnose_date.split('T')[0] : '', // Extract date part from ISO string
+          birth_date: patient.birth_date ? patient.birth_date.split('T')[0] : '', // Extract date part from ISO string
+          status: patient.status.toLowerCase() as 'aktif' | 'sembuh' | 'gagal'
         });
       } else if (response.data?.meta?.code === 404 || response.data?.meta?.code === 401) {
         console.warn('Dashboard API issue:', response.data.meta.message);
@@ -179,6 +187,8 @@ const DashboardPMO: React.FC = () => {
           address: editPatientData.address,
           gender: mapGenderToAPI(editPatientData.gender),
           no_telp: editPatientData.no_telp,
+          diagnose_date: editPatientData.diagnose_date,
+          birth_date: editPatientData.birth_date,
           status: editPatientData.status
         };
         
@@ -566,6 +576,24 @@ const DashboardPMO: React.FC = () => {
                       <option value="Perempuan">Perempuan</option>
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Diagnosa</label>
+                    <input
+                      type="date"
+                      value={editPatientData.diagnose_date}
+                      onChange={(e) => setEditPatientData({...editPatientData, diagnose_date: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label>
+                    <input
+                      type="date"
+                      value={editPatientData.birth_date}
+                      onChange={(e) => setEditPatientData({...editPatientData, birth_date: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-4">
                   <div>
@@ -617,6 +645,18 @@ const DashboardPMO: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
                     <p className="text-gray-800 text-sm md:text-base">{patientData?.gender}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Tanggal Diagnosa</label>
+                    <p className="text-gray-800 text-sm md:text-base">
+                      {patientData?.diagnose_date ? new Date(patientData.diagnose_date).toLocaleDateString('id-ID') : 'Belum diisi'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
+                    <p className="text-gray-800 text-sm md:text-base">
+                      {patientData?.birth_date ? new Date(patientData.birth_date).toLocaleDateString('id-ID') : 'Belum diisi'}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-4">
