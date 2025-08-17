@@ -105,7 +105,7 @@ export const getDailyMonitoring = async (patientId: number, params?: DailyMonito
   if (params?.start_date) queryParams.append('start_date', params.start_date);
   if (params?.end_date) queryParams.append('end_date', params.end_date);
   if (params?.sort_by) queryParams.append('sort_by', params.sort_by);
-  if (params?.order_by) queryParams.append('order_by', params.order_by);
+  if (params?.order_by) queryParams.append('order_by', params.order_by);    
   if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
 
   const queryString = queryParams.toString();

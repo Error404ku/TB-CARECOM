@@ -93,7 +93,7 @@ export const useDailyMonitoring = (patientId?: number, params?: DailyMonitoringP
       setError(null);
       setIsEmpty(false);
       const response = await getDailyMonitoring(id, searchParams || params);
-      setDailyMonitoring(response.data.data);
+      setDailyMonitoring(response.data.data || []);
     } catch (err: any) {
       // Handle 404 specifically - means no monitoring data exists yet
       if (err.response?.status === 404) {

@@ -26,7 +26,7 @@ const DailyMonitoringPage: React.FC = () => {
   const { dailyMonitoring, loading, error, isEmpty, refetch } = useDailyMonitoring(patientId);
 
   // Get patient info from monitoring data if available
-  const patient = dailyMonitoring.length > 0 ? dailyMonitoring[0].patient : null;
+  const patient = dailyMonitoring && dailyMonitoring.length > 0 ? dailyMonitoring[0].patient : null;
 
   // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
@@ -132,7 +132,7 @@ const DailyMonitoringPage: React.FC = () => {
     );
   }
 
-  if (isEmpty || dailyMonitoring.length === 0) {
+  if (isEmpty || !dailyMonitoring || dailyMonitoring.length === 0) {
     return (
       <ModernLayout title="Daily Monitoring" subtitle="Data monitoring harian">
         <div className="text-center py-12">
@@ -213,7 +213,7 @@ const DailyMonitoringPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900">{patient.name}</h3>
               <p className="text-sm text-gray-600">
-                ID Pasien: {patient.id} • Total Monitoring: {dailyMonitoring.length}
+                ID Pasien: {patient.id} • Total Monitoring: {dailyMonitoring ? dailyMonitoring.length : 0}
               </p>
             </div>
           </div>
@@ -345,7 +345,7 @@ const DailyMonitoringPage: React.FC = () => {
       {/* Monitoring Data */}
       <div className="bg-white rounded-lg shadow">
         <div className="divide-y divide-gray-200">
-          {dailyMonitoring.map((monitoring) => (
+          {(dailyMonitoring || []).map((monitoring) => (
             <div key={monitoring.id} className="p-6 hover:bg-gray-50">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
