@@ -3,6 +3,8 @@ import { privateClient } from './client';
 
 // TypeScript interfaces for nurse APIs
 export interface Patient {
+  birth_date: string;
+  diagnose_date: string;
   id: number;
   name: string;
   address: string;

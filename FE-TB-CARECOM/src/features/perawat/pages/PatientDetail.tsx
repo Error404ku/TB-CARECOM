@@ -13,7 +13,9 @@ const PatientDetail: React.FC = () => {
   
   const { patient, loading, error, refetch } = usePatient(patientId);
   const { restartTreatment, loading: restartLoading } = useRestartTreatment();
-
+  // useEffect(() => {
+  //   console.table(patient);
+  // }, [patient]);
   const handleRestartTreatment = async () => {
     const result = await Swal.fire({
       title: 'Restart Pengobatan?',
@@ -133,11 +135,29 @@ const PatientDetail: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                <p className="mt-1 text-sm text-gray-900">{patient.name}</p>
+                <p className="mt-1 text-sm text-gray-900 font-medium">{patient.name}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
                 <p className="mt-1 text-sm text-gray-900">{perawatUtils.formatGender(patient.gender)}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {patient.birth_date ? perawatUtils.formatDate(patient.birth_date) : 'Tidak diketahui'}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Tanggal Diagnosa</label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {patient.diagnose_date ? perawatUtils.formatDate(patient.diagnose_date) : 'Tidak diketahui'}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Usia</label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {patient.birth_date ? perawatUtils.calculateAge(patient.birth_date) : 'Tidak diketahui'}
+                </p>
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700">Alamat</label>
@@ -148,9 +168,9 @@ const PatientDetail: React.FC = () => {
                 <p className="mt-1 text-sm text-gray-900">{patient.no_telp}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Status</label>
-                <span className={`mt-1 inline-block px-2 py-1 text-xs font-medium rounded-full ${perawatUtils.getStatusBadgeColor(patient.status)}`}>
-                  {perawatUtils.formatPatientStatus(patient.status)}
+                <label className="block text-sm font-medium text-gray-700">Status Pengobatan</label>
+                <span className={`mt-1 inline-block px-3 py-1 text-sm font-medium rounded-full ${perawatUtils.getStatusBadgeColor(patient.status)}`}>
+                  {perawatUtils.formatStatus(patient.status)}
                 </span>
               </div>
             </div>
@@ -162,12 +182,14 @@ const PatientDetail: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Tanggal Mulai Pengobatan</label>
-                <p className="mt-1 text-sm text-gray-900">{perawatUtils.formatDate(patient.start_treatment_date)}</p>
+                <p className="mt-1 text-sm text-gray-900">
+                  {patient.start_treatment_date ? perawatUtils.formatDate(patient.start_treatment_date) : 'Tidak diketahui'}
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Lama Pengobatan</label>
                 <p className="mt-1 text-sm text-gray-900">
-                  {Math.floor((Date.now() - new Date(patient.start_treatment_date).getTime()) / (1000 * 60 * 60 * 24))} hari
+                  {patient.start_treatment_date ? perawatUtils.calculateTreatmentDuration(patient.start_treatment_date) : 'Tidak diketahui'}
                 </p>
               </div>
             </div>

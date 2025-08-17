@@ -449,6 +449,11 @@ const PMODetail: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
                   <p className="text-gray-800 text-base">{formatDate(patientData.birth_date)}</p>
                 </div>
+                {/* Usia = tanggal sekarang dikurangi tanggal lahir */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Usia</label>
+                  <p className="text-gray-800 text-base">{Math.floor((Date.now() - new Date(patientData.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 365.25))} Tahun</p>
+                </div>
               </div>
             </div>
           </div>

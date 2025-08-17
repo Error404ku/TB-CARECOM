@@ -670,6 +670,22 @@ const DashboardPMO: React.FC = () => {
                       {patientData?.status}
                     </span>
                   </div>
+                  {/* usia pasien tanggal sekarang dikurangi tanggal lahir */}
+                  <div>
+                <label className="block text-sm font-medium text-gray-700">Usia</label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {patientData?.birth_date ? (() => {
+                    const birth = new Date(patientData.birth_date);
+                    const today = new Date();
+                    let age = today.getFullYear() - birth.getFullYear();
+                    const monthDiff = today.getMonth() - birth.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                      age--;
+                    }
+                    return age < 0 || age > 150 ? 'Data tidak valid' : `${age} tahun`;
+                  })() : 'Tidak diketahui'}
+                </p>
+              </div>
                 </div>
               </div>
             )}
